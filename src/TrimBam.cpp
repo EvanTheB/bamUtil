@@ -25,7 +25,6 @@
 #include "SamFlag.h"
 #include "BgzfFileType.h"
 #include "TrimBam.h"
-#include "PhoneHome.h"
 #include "SamFilter.h"
 
 void TrimBam::printTrimBamDescription(std::ostream& os)
@@ -72,7 +71,6 @@ int TrimBam::execute(int argc, char ** argv)
   bool noeof = false;
   bool ignoreStrand = false;
   bool clip = false;
-  bool noPhoneHome = false;
   std::string inName = "";
   std::string outName = "";
 
@@ -91,13 +89,9 @@ int TrimBam::execute(int argc, char ** argv)
       { "ignoreStrand", no_argument, NULL, 'i'},
       { "clip", no_argument, NULL, 'c'},
       { "noeof", no_argument, NULL, 'n'},
-      { "noPhoneHome", no_argument, NULL, 'p'},
-      { "nophonehome", no_argument, NULL, 'P'},
-      { "phoneHomeThinning", required_argument, NULL, 't'},
-      { "phonehomethinning", required_argument, NULL, 'T'},
       { NULL, 0, NULL, 0 },
   };
-  
+
   int argIndex = 4;
   if(argv[argIndex][0] != '-')
   {
@@ -115,7 +109,7 @@ int TrimBam::execute(int argc, char ** argv)
                             "L:R:icn", getopt_long_options, &n_option_index) )
           != -1 )
   {
-      switch(c) 
+      switch(c)
       {
           case 'L':
               numTrimBaseL = atoi(optarg);
@@ -134,11 +128,9 @@ int TrimBam::execute(int argc, char ** argv)
               break;
           case 'p':
           case 'P':
-              noPhoneHome = true;
               break;
           case 't':
           case 'T':
-              PhoneHome::allThinning = atoi(optarg);
               break;
           default:
               fprintf(stderr,"ERROR: Unrecognized option %s\n",
@@ -147,11 +139,6 @@ int TrimBam::execute(int argc, char ** argv)
       }
   }
 
-  if(!noPhoneHome)
-  {
-      PhoneHome::checkVersion(getProgramName(), VERSION);
-  }
-  
   if(noeof)
   {
       // Set that the eof block is not required.
@@ -167,7 +154,7 @@ int TrimBam::execute(int argc, char ** argv)
     fprintf(stderr, "%s\n", samOut.GetStatusMessage());
     return(samOut.GetStatus());
   }
-  
+
   fprintf(stderr,"Arguments in effect: \n");
   fprintf(stderr,"\tInput file : %s\n",inName.c_str());
   fprintf(stderr,"\tOutput file : %s\n",outName.c_str());
@@ -175,7 +162,7 @@ int TrimBam::execute(int argc, char ** argv)
   if(clip) { trimType = "clip"; }
   if(numTrimBaseL == numTrimBaseR)
   {
-      fprintf(stderr,"\t#Bases to %s from each side : %d\n", 
+      fprintf(stderr,"\t#Bases to %s from each side : %d\n",
               trimType.c_str(), numTrimBaseL);
   }
   else
@@ -201,7 +188,7 @@ int TrimBam::execute(int argc, char ** argv)
                   trimType.c_str(), numTrimBaseR);
       }
   }
- 
+
    // Read the sam header.
    SamFileHeader samHeader;
    if(!samIn.ReadHeader(samHeader))
@@ -214,7 +201,7 @@ int TrimBam::execute(int argc, char ** argv)
    if(!samOut.WriteHeader(samHeader))
    {
       fprintf(stderr, "%s\n", samOut.GetStatusMessage());
-      return(samOut.GetStatus());     
+      return(samOut.GetStatus());
    }
 
    SamRecord samRecord;
@@ -306,16 +293,16 @@ int TrimBam::execute(int argc, char ** argv)
        return(-1);
      }
    }
-   
+
    if(samIn.GetStatus() != SamStatus::NO_MORE_RECS)
    {
       // Failed to read a record.
       fprintf(stderr, "%s\n", samIn.GetStatusMessage());
-   }   
-   
-   std::cerr << std::endl << "Number of records read = " << 
+   }
+
+   std::cerr << std::endl << "Number of records read = " <<
      samIn.GetCurrentRecordCount() << std::endl;
-   std::cerr << "Number of records written = " << 
+   std::cerr << "Number of records written = " <<
      samOut.GetCurrentRecordCount() << std::endl;
 
    if(samIn.GetStatus() != SamStatus::NO_MORE_RECS)

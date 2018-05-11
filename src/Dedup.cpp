@@ -35,7 +35,7 @@ Dedup::~Dedup()
 {
     // clean up the maps.
     // First free any fragment records.
-    for(FragmentMap::iterator iter = myFragmentMap.begin(); 
+    for(FragmentMap::iterator iter = myFragmentMap.begin();
         iter != myFragmentMap.end(); iter++)
     {
         mySamPool.releaseRecord(iter->second.recordPtr);
@@ -43,7 +43,7 @@ Dedup::~Dedup()
     myFragmentMap.clear();
 
     // Free any paired records.
-    for(PairedMap::iterator iterator = myPairedMap.begin(); 
+    for(PairedMap::iterator iterator = myPairedMap.begin();
         iterator != myPairedMap.end(); iterator++)
     {
         // These are not duplicates, but we are done with them, so release them.
@@ -53,7 +53,7 @@ Dedup::~Dedup()
     myPairedMap.clear();
 
     // Free any entries in the mate map.
-    for(MateMap::iterator iter = myMateMap.begin(); 
+    for(MateMap::iterator iter = myMateMap.begin();
         iter != myMateMap.end(); iter++)
     {
         mySamPool.releaseRecord(iter->second.recordPtr);
@@ -100,7 +100,7 @@ void Dedup::printUsage(std::ostream& os)
     os<< "\n" << std::endl;
 }
 
-int Dedup::execute(int argc, char** argv) 
+int Dedup::execute(int argc, char** argv)
 {
     /* --------------------------------
      * process the arguments
@@ -132,17 +132,16 @@ int Dedup::execute(int argc, char** argv)
     parameters.addBool("verbose", &verboseFlag);
     parameters.addBool("noeof", &noeof);
     parameters.addBool("params", &params);
-    parameters.addPhoneHome(VERSION);
     myRecab.addRecabSpecificParameters(parameters);
 
     ParameterList inputParameters;
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             parameters.getLongParameterList()));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -207,7 +206,7 @@ int Dedup::execute(int argc, char** argv)
             return(status);
         }
     }
-    
+
     if(params)
     {
         inputParameters.Status();
@@ -310,9 +309,9 @@ int Dedup::execute(int argc, char** argv)
         // let the user know we're not napping
         if (verboseFlag && (recordCount % 100000 == 0))
         {
-            Logger::gLogger->writeLog("recordCount=%u singleKeyMap=%u pairedKeyMap=%u, dictSize=%u", 
-                                      recordCount, myFragmentMap.size(), 
-                                      myPairedMap.size(), 
+            Logger::gLogger->writeLog("recordCount=%u singleKeyMap=%u pairedKeyMap=%u, dictSize=%u",
+                                      recordCount, myFragmentMap.size(),
+                                      myPairedMap.size(),
                                       myMateMap.size());
         }
     }
@@ -394,7 +393,7 @@ int Dedup::execute(int argc, char** argv)
         // if it's appropriate
         int flag = record.getFlag();
         if (foundDup)
-        {   
+        {
             // this record is a duplicate, so mark it.
             record.setFlag( flag | 0x400 );
             currentDupIndex++;
@@ -419,7 +418,7 @@ int Dedup::execute(int argc, char** argv)
         else
         {
             if(myForceFlag)
-            { 
+            {
                 // this is not a duplicate we've identified but we want to
                 // remove any duplicate marking
                 record.setFlag( flag & 0xfffffbff ); // unmark duplicate
@@ -431,7 +430,7 @@ int Dedup::execute(int argc, char** argv)
             }
             samOut.WriteRecord(header, record);
         }
-	
+
         // Let the user know we're still here
         if (verboseFlag && (currentIndex % 100000 == 0)) {
             Logger::gLogger->writeLog("recordCount=%u", currentIndex);
@@ -442,7 +441,7 @@ int Dedup::execute(int argc, char** argv)
     samIn.Close();
     samOut.Close();
 
-    Logger::gLogger->writeLog("Successfully %s %u unpaired and %u paired duplicate reads", 
+    Logger::gLogger->writeLog("Successfully %s %u unpaired and %u paired duplicate reads",
                               removeFlag ? "removed" : "marked" ,
                               singleDuplicates,
                               pairedDuplicates/2);
@@ -474,13 +473,13 @@ void Dedup::cleanupPriorReads(SamRecord* record)
         PairedKey pairedKey(emptyKey, tempKey2);
         pairedFinish = myPairedMap.lower_bound(pairedKey);
         mateStopPos =
-            SamHelper::combineChromPos(reference, 
+            SamHelper::combineChromPos(reference,
                                        coordinate);
     }
 
     // For each key k < fragmentFinish, release the record since we are
     // done with that position and it is not a duplicate.
-    for(FragmentMap::iterator iter = myFragmentMap.begin(); 
+    for(FragmentMap::iterator iter = myFragmentMap.begin();
         iter != fragmentFinish; iter++)
     {
         // If it is not paired, we are done with this record.
@@ -497,11 +496,11 @@ void Dedup::cleanupPriorReads(SamRecord* record)
     }
 
     // Now do the same thing with the paired reads
-    for(PairedMap::iterator iter = myPairedMap.begin(); 
+    for(PairedMap::iterator iter = myPairedMap.begin();
         iter != pairedFinish; iter++)
     {
         PairedData* pairedData = &(iter->second);
-        // These are not duplicates, but we are done with them, 
+        // These are not duplicates, but we are done with them,
         // so perform any additional handling.
         handleNonDuplicate(pairedData->record1Ptr);
         handleNonDuplicate(pairedData->record2Ptr);
@@ -539,7 +538,7 @@ void Dedup::cleanupPriorReads(SamRecord* record)
 // determine whether the record's position is different from the previous record
 bool Dedup::hasPositionChanged(SamRecord& record)
 {
-    if (lastReference != record.getReferenceID() || 
+    if (lastReference != record.getReferenceID() ||
         lastCoordinate < record.get0BasedPosition())
     {
         if (lastReference != record.getReferenceID())
@@ -564,31 +563,31 @@ void Dedup::checkDups(SamRecord& record, uint32_t recordCount)
     static DupKey mateKey;
     key.updateKey(record, getLibraryID(record));
 
-    int flag = record.getFlag(); 
+    int flag = record.getFlag();
     bool recordPaired = SamFlag::isPaired(flag) && SamFlag::isMateMapped(flag);
     int sumBaseQual = getBaseQuality(record);
 
     int32_t chromID = record.getReferenceID();
     int32_t mateChromID = record.getMateReferenceID();
 
-    // If we are one-chrom and the mate is not on the same chromosome, 
+    // If we are one-chrom and the mate is not on the same chromosome,
     // mark it as not paired.
     if(myOneChrom && (chromID != mateChromID))
     {
         recordPaired = false;
     }
-    
+
     // Look in the map to see if an entry for this key exists.
-    FragmentMapInsertReturn ireturn = 
+    FragmentMapInsertReturn ireturn =
         myFragmentMap.insert(std::make_pair(key, ReadData()));
 
     ReadData* readData = &(ireturn.first->second);
 
     // Mark this record's data in the fragment record if this is the first
-    // entry or if it is a duplicate and the old record is not paired and 
+    // entry or if it is a duplicate and the old record is not paired and
     // the new record is paired or the has a higher quality.
     if((ireturn.second == true) ||
-       ((readData->paired == false) && 
+       ((readData->paired == false) &&
         (recordPaired || (sumBaseQual > readData->sumBaseQual))))
     {
         // If there was a previous record, mark it duplicate and release
@@ -628,30 +627,30 @@ void Dedup::checkDups(SamRecord& record, uint32_t recordCount)
         // Not paired, no more operations required, so return.
         return;
     }
-    
+
     // This is a paired record, so check for its mate.
-    uint64_t readPos = 
+    uint64_t readPos =
         SamHelper::combineChromPos(chromID,
                                    record.get0BasedPosition());
     uint64_t matePos =
-        SamHelper::combineChromPos(mateChromID, 
+        SamHelper::combineChromPos(mateChromID,
                                    record.get0BasedMatePosition());
     SamRecord* mateRecord = NULL;
     int mateIndex = 0;
-    
+
     // Check to see if the mate is prior to this record.
     if(matePos <= readPos)
     {
-        // The mate map is stored by the mate position, so look for this 
+        // The mate map is stored by the mate position, so look for this
         // record's position.
         // The mate should be in the mate map, so find it.
         std::pair<MateMap::iterator,MateMap::iterator> matches =
             myMateMap.equal_range(readPos);
         // Loop through the elements that matched the pos looking for the mate.
-        for(MateMap::iterator iter = matches.first; 
+        for(MateMap::iterator iter = matches.first;
             iter != matches.second; iter++)
         {
-            if(strcmp((*iter).second.recordPtr->getReadName(), 
+            if(strcmp((*iter).second.recordPtr->getReadName(),
                       record.getReadName()) == 0)
             {
                 // Found the match.
@@ -669,7 +668,7 @@ void Dedup::checkDups(SamRecord& record, uint32_t recordCount)
     if((mateRecord == NULL) && (matePos >= readPos))
     {
         // Haven't gotten to the mate yet, so store this record.
-        MateMap::iterator mateIter = 
+        MateMap::iterator mateIter =
             myMateMap.insert(std::make_pair(matePos, ReadData()));
         mateIter->second.sumBaseQual = sumBaseQual;
         mateIter->second.recordPtr = &record;
@@ -690,7 +689,7 @@ void Dedup::checkDups(SamRecord& record, uint32_t recordCount)
     PairedKey pkey(key, mateKey);
 
     // Check to see if this pair is a duplicate.
-    PairedMapInsertReturn pairedReturn = 
+    PairedMapInsertReturn pairedReturn =
         myPairedMap.insert(std::make_pair(pkey,PairedData()));
     PairedData* storedPair = &(pairedReturn.first->second);
 
@@ -783,7 +782,7 @@ void Dedup::checkDups(SamRecord& record, uint32_t recordCount)
 }
 
 
-// Finds the total base quality of a read 
+// Finds the total base quality of a read
 int Dedup::getBaseQuality(SamRecord & record) {
     const char* baseQualities = record.getQuality();
     int readLength = record.getReadLength();
@@ -805,7 +804,7 @@ void Dedup::buildReadGroupLibraryMap(SamFileHeader& header) {
     rgidLibMap.clear();
     numLibraries = 0;
     std::map<std::string,uint32_t> libNameMap;
-    
+
     SamHeaderRecord * headerRecord = header.getNextRGRecord();
     while(headerRecord != NULL) {
         std::string ID = headerRecord->getTagValue("ID");
@@ -814,7 +813,7 @@ void Dedup::buildReadGroupLibraryMap(SamFileHeader& header) {
         if ( ID.empty() ) {
             std::string headerRecordString;
             headerRecord->appendString(headerRecordString);
-            Logger::gLogger->error("Cannot find readGroup ID information in the header line %s", 
+            Logger::gLogger->error("Cannot find readGroup ID information in the header line %s",
                                    headerRecordString.c_str());
         }
         if ( rgidLibMap.find(ID) != rgidLibMap.end() ) {
@@ -842,12 +841,12 @@ void Dedup::buildReadGroupLibraryMap(SamFileHeader& header) {
     if (numLibraries > 0xff) {
         Logger::gLogger->error("More than 255 library names are identified. Dedup currently only allows up to 255 library names");
     }
-}    
+}
 
 // get the libraryID of a record
 uint32_t Dedup::getLibraryID(SamRecord& record, bool checkTags) {
     if ( ( checkTags == false ) && ( numLibraries <= 1 ) ) {
-        return 0; 
+        return 0;
     } else {
         char tag[3];
         char vtype;
@@ -895,7 +894,7 @@ void Dedup::handleNonDuplicate(SamRecord* recordPtr)
     if(myDoRecab)
     {
         if(myForceFlag)
-        { 
+        {
             // this is not a duplicate we've identified but we want to
             // remove any duplicate marking
             uint16_t flag = recordPtr->getFlag();

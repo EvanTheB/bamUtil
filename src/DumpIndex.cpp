@@ -66,10 +66,9 @@ int DumpIndex::execute(int argc, char **argv)
         LONG_INTPARAMETER("refID", &refID)
         LONG_PARAMETER("summary", &summary)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.

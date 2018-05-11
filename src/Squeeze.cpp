@@ -66,7 +66,7 @@ void Squeeze::printBinningUsage(std::ostream& os)
     os << "\t  By default, the bin value is the low end of the range." << std::endl;
     os << "\t\t--binQualS   : Bin the Qualities as specified (phred): minQualOfBin2, minQualofBin3..." << std::endl;
     os << "\t\t--binQualF   : Bin the Qualities based on the specified file" << std::endl;
-    os << "\t\t--binCustom  : Use the custom point of the quality bin (followed by colon) for the quality value of the bin." << std::endl;    
+    os << "\t\t--binCustom  : Use the custom point of the quality bin (followed by colon) for the quality value of the bin." << std::endl;
     os << "\t\t--binMid     : Use the mid point of the quality bin range for the quality value of the bin." << std::endl;
     os << "\t\t--binHigh    : Use the high end of the quality bin range for the quality value of the bin." << std::endl;
 }
@@ -133,23 +133,22 @@ int Squeeze::execute(int argc, char ** argv)
     parameters.addString("rmTags", &rmTags);
     parameters.addBool("noeof", &noeof);
     parameters.addBool("params", &params);
-    parameters.addPhoneHome(VERSION);
-    addBinningParameters(parameters);    
+    addBinningParameters(parameters);
 
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             parameters.getLongParameterList()));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
         // Set that the eof block is not required.
         BgzfFileType::setRequireEofBlock(false);
     }
-    
+
     // Check to see if the in file was specified, if not, report an error.
     if(inFile == "")
     {
@@ -248,7 +247,7 @@ int Squeeze::execute(int argc, char ** argv)
     // Set returnStatus to success.  It will be changed to the
     // failure reason if any of the writes or updates fail.
     SamStatus::Status returnStatus = SamStatus::SUCCESS;
-  
+
     // Keep reading records until ReadRecord returns false.
     while(samIn.ReadRecord(samHeader, samRecord))
     {
@@ -268,22 +267,22 @@ int Squeeze::execute(int argc, char ** argv)
             // Shorten the readname.
             // Check the hash for the readname.
             const char* readName = samRecord.getReadName();
-            
+
             if(sReadName.IsEmpty())
             {
                 // Lookup the readname in the hash.
                 int index = rnHash.Find(readName, nextRn);
-                
+
                 // Check to see if the nextRn was added to the hash.
                 if(rnHash.Entries() != numHashEntries)
                 {
                     // New Read Name was added to the hash.
                     numHashEntries = rnHash.Entries();
                     newRn = nextRn;
-                    
+
                     // Write it to the file.
                     ifprintf(readNameFile, "%s\t%d\n", readName, nextRn);
-                    
+
                     // Update the next read name.
                     ++nextRn;
                 }
@@ -299,17 +298,17 @@ int Squeeze::execute(int argc, char ** argv)
                 // read name.
                 if(prevRn != readName)
                 {
-                    // New read name 
+                    // New read name
                     newRn = nextRn;
-                    
+
                     // Write it to the file.
                     ifprintf(readNameFile, "%s\t%d\n", readName, nextRn);
-                    
+
                     // Update the next read name.
                     ++nextRn;
                     prevRn = readName;
                 }
-                
+
             }
             samRecord.setReadName(newRn.c_str());
         }
@@ -347,17 +346,17 @@ int Squeeze::execute(int argc, char ** argv)
             returnStatus = samOut.GetStatus();
         }
     }
-   
+
     if(samIn.GetStatus() != SamStatus::NO_MORE_RECS)
     {
         // Failed to read a record.
         fprintf(stderr, "%s\n", samIn.GetStatusMessage());
         returnStatus = samOut.GetStatus();
-    }   
-   
-    std::cerr << std::endl << "Number of records read = " << 
+    }
+
+    std::cerr << std::endl << "Number of records read = " <<
         samIn.GetCurrentRecordCount() << std::endl;
-    std::cerr << "Number of records written = " << 
+    std::cerr << "Number of records written = " <<
         samOut.GetCurrentRecordCount() << std::endl;
 
     // Since the reads were successful, return the status based
@@ -375,7 +374,7 @@ void Squeeze::addBinningParameters(LongParamContainer& params)
     params.addString("binQualS", &myBinQualS);
     params.addString("binQualF", &myBinQualF);
     params.addBool("binMid", &myBinMid);
-    params.addBool("binCustom", &myBinCustom);    
+    params.addBool("binCustom", &myBinCustom);
     params.addBool("binHigh", &myBinHigh);
 }
 
@@ -394,14 +393,14 @@ int Squeeze::processBinningParam()
         IFILE qualBinFile = ifopen(myBinQualF, "r");
         if(qualBinFile == NULL)
         {
-            std::cerr << "ERROR: failed to open the quality bin file (" 
+            std::cerr << "ERROR: failed to open the quality bin file ("
                       << qualBinFile << ")." << std::endl;
             return(-1);
         }
 
         if(myBinQualS.ReadLine(qualBinFile) <= 0)
         {
-            std::cerr << "ERROR: failed to read the quality bin file (" 
+            std::cerr << "ERROR: failed to read the quality bin file ("
                       << qualBinFile << ")." << std::endl;
             return(-1);
         }
@@ -411,13 +410,13 @@ int Squeeze::processBinningParam()
     if ( !myBinQualMap.IsEmpty() ) {
       if ( !myBinQualS.IsEmpty() ) {
         std::cerr << "ERROR: --binQualS or --binQualF cannot be used with --binQualMap\n";
-        return(-1);	
+        return(-1);
       }
 
       // Read the quality bins from the file.
       IFILE qualMapFile = ifopen(myBinQualMap, "r");
       if(qualMapFile == NULL) {
-	std::cerr << "ERROR: failed to open the quality map file (" 
+	std::cerr << "ERROR: failed to open the quality map file ("
 		  << qualMapFile << ")." << std::endl;
 	return(-1);
       }
@@ -432,8 +431,8 @@ int Squeeze::processBinningParam()
 	  return (-1);
 	}
 	if ( tok[0].AsInteger() != i ) {
-	  std::cerr << "ERROR: the quality map file is expected to have " << i <<" at line " << i+1 << ", but observed " << tok[0] << std::endl; 
-	  return (-1);	  
+	  std::cerr << "ERROR: the quality map file is expected to have " << i <<" at line " << i+1 << ", but observed " << tok[0] << std::endl;
+	  return (-1);
 	}
 	int oldQ = tok[0].AsInteger();
 	int newQ = tok[1].AsInteger();
@@ -452,7 +451,7 @@ int Squeeze::processBinningParam()
         bins.ReplaceColumns(myBinQualS, ',');
 	int binStart = 0;
         int nextBinStart = 0;
-	
+
 	if ( myBinCustom ) {
 	  for(int i=0; i < bins.Length(); ++i) {
 	    StringArray tok;
@@ -463,13 +462,13 @@ int Squeeze::processBinningParam()
 	    }
 	    int minQual;
 	    int newQual;
-	    if ( ( !tok[0].AsInteger(minQual) ) || ( minQual < 0 ) || ( minQual > 60 ) ) { 	      
+	    if ( ( !tok[0].AsInteger(minQual) ) || ( minQual < 0 ) || ( minQual > 60 ) ) {
 	      std::cerr << "with --binCustom, it should have a form of [MINQUAL]:[NEWQUAL] for each comma-separated bin" << std::endl;
-	      return(-1);	      
+	      return(-1);
 	    }
-	    if ( ( !tok[1].AsInteger(newQual) ) || ( newQual < 0 ) || ( newQual > 60 ) ) { 
+	    if ( ( !tok[1].AsInteger(newQual) ) || ( newQual < 0 ) || ( newQual > 60 ) ) {
 	      std::cerr << "with --binCustom, it should have a form of [MINQUAL]:[NEWQUAL] for each comma-separated bin" << std::endl;
-	      return(-1);	      	      
+	      return(-1);
 	    }
 	    for(int j=minQual; j < MAX_PHRED_QUAL; ++j) {
 	      myQualBinMap[j+QUAL_CONVERT] = newQual+QUAL_CONVERT;
@@ -521,7 +520,7 @@ void Squeeze::binPhredQuals(int binStartPhred, int binEndPhred)
     if(binEnd > MAX_QUAL_CHAR)
     {
         binEnd = MAX_QUAL_CHAR;
-    } 
+    }
     // Determine the value for this bin.
     int binValue  = binStart;
     if(myBinMid)
@@ -546,7 +545,7 @@ void Squeeze::bin(SamRecord& samRecord)
     if (!myBinQualS.IsEmpty())
     {
         qual = samRecord.getQuality();
-        
+
         if(qual != "*")
         {
             // Only bin set qualities.

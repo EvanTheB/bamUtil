@@ -46,7 +46,7 @@ WriteRegion::WriteRegion()
       myBedRefID(SamReferenceInfo::NO_REF_ID),
       myBedFile(NULL)
 {
-    
+
 }
 
 void WriteRegion::printWriteRegionDescription(std::ostream& os)
@@ -133,7 +133,7 @@ int WriteRegion::execute(int argc, char **argv)
         LONG_PARAMETER_GROUP("Required Parameters")
         LONG_STRINGPARAMETER("in", &inFile)
         LONG_STRINGPARAMETER("out", &outFile)
-        LONG_PARAMETER_GROUP("Optional Region Parameters")        
+        LONG_PARAMETER_GROUP("Optional Region Parameters")
         LONG_STRINGPARAMETER("bamIndex", &indexFile)
         LONG_STRINGPARAMETER("refName", &myRefName)
         LONG_INTPARAMETER("refID", &myRefID)
@@ -149,16 +149,15 @@ int WriteRegion::execute(int argc, char **argv)
         LONG_STRINGPARAMETER("requiredFlags", &requiredFlags)
         LONG_PARAMETER("noeof", &noeof)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // bam writeRegion, parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -183,7 +182,7 @@ int WriteRegion::execute(int argc, char **argv)
         std::cerr << "Missing mandatory argument: --out" << std::endl;
         return(-1);
     }
-    
+
     if(indexFile == "")
     {
         // In file was not specified, so set it to the in file
@@ -221,7 +220,7 @@ int WriteRegion::execute(int argc, char **argv)
         IFILE rnFileRdr = ifopen(rnFile, "r");
         if(rnFileRdr == NULL)
         {
-            std::cerr << "ERROR: Could not open read name file: " 
+            std::cerr << "ERROR: Could not open read name file: "
                       << rnFile << std::endl;
             inputParameters.Status();
             return(-1);
@@ -246,7 +245,7 @@ int WriteRegion::execute(int argc, char **argv)
         inputParameters.Status();
     }
 
-    // Open the file for reading.   
+    // Open the file for reading.
     mySamIn.OpenForRead(inFile);
 
     mySamIn.SetReadFlags(requiredFlags.AsInteger(), excludeFlags.AsInteger());
@@ -273,7 +272,7 @@ int WriteRegion::execute(int argc, char **argv)
     // Set returnStatus to success.  It will be changed
     // to the failure reason if any of the writes fail.
     SamStatus::Status returnStatus = SamStatus::SUCCESS;
-        
+
     while(getNextSection())
     {
         // Keep reading records until they aren't anymore.
@@ -300,7 +299,7 @@ int WriteRegion::execute(int argc, char **argv)
             // Check to see if the read has already been processed.
             if(myPrevEnd != UNSPECIFIED_INT)
             {
-                // Because we already know that the bed was sorted, 
+                // Because we already know that the bed was sorted,
                 // we know that the previous section started before
                 // this one, so if the previous end is greater than
                 // this record's start position we know that it
@@ -400,15 +399,15 @@ bool WriteRegion::getNextSection()
 
                     // Get the reference ID for the reference name.
                     myBedRefID = mySamHeader.getReferenceID(myPrevRefName);
-                    
+
                     // Check to see if the reference ID is found.
                     if(myBedRefID == SamReferenceInfo::NO_REF_ID)
                     {
                         // The specified Reference ID is not in the file,
                         // so check to see if it has chr.
                         // Check to see if it is the same except for 'chr' appended.
-                        if((myPrevRefName[0] == 'c') && 
-                           (myPrevRefName[1] == 'h') && 
+                        if((myPrevRefName[0] == 'c') &&
+                           (myPrevRefName[1] == 'h') &&
                            (myPrevRefName[2] == 'r'))
                         {
                             // It starts with chr, so look up with out the chr
@@ -441,14 +440,14 @@ bool WriteRegion::getNextSection()
                     // The start position (2nd column) is not an integer.
                     std::cerr << "Improperly formatted bed line, start position (2nd column) is not an integer: "
                               << myBedColumn[1]
-                              << "; Skipping to the next line.\n";         
+                              << "; Skipping to the next line.\n";
                 }
                 else if(!myBedColumn[2].AsInteger(myEnd))
                 {
                     // The end position (3rd column) is not an integer.
                     std::cerr << "Improperly formatted bed line, end position (3rd column) is not an integer: "
                               << myBedColumn[2]
-                              << "; Skipping to the next line.\n";         
+                              << "; Skipping to the next line.\n";
                 }
                 else if(myStart >= myEnd)
                 {
@@ -457,7 +456,7 @@ bool WriteRegion::getNextSection()
                               << myBedColumn[1]
                               << " >= "
                               << myBedColumn[2]
-                              << "; Skipping to the next line.\n";         
+                              << "; Skipping to the next line.\n";
                 }
                 else if(myPrevStart > myStart)
                 {
@@ -483,6 +482,6 @@ bool WriteRegion::getNextSection()
         // if we have not already written a region.
         anotherSection = !myWroteReg;
     }
-    
+
     return(anotherSection);
 }

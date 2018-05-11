@@ -24,7 +24,6 @@
 #include "SamFile.h"
 #include "Parameters.h"
 #include "SamValidation.h"
-#include "PhoneHome.h"
 
 void ReadIndexedBam::printReadIndexedBamDescription(std::ostream& os)
 {
@@ -49,16 +48,8 @@ int ReadIndexedBam::execute(int argc, char ** argv)
 {
     if(argc != 5)
     {
-        String noPhArg = "--noPhoneHome";
-        if((argc != 6) || (noPhArg.SlowCompareToStem(argv[5]) != 0))
-        {
-            printUsage(std::cerr);
-            exit(-1);
-        }
-    }
-    else
-    {
-        PhoneHome::checkVersion(getProgramName(), VERSION);
+        printUsage(std::cerr);
+        exit(-1);
     }
     return(readIndexedBam(argv[2], argv[3], argv[4]));
 }
@@ -104,13 +95,13 @@ int ReadIndexedBam::readIndexedBam(const char* inputFilename,
             samOut.WriteRecord(samHeader, samRecord);
         }
 
-        std::cerr << "Reference ID " << i << " has " << numSectionRecords 
+        std::cerr << "Reference ID " << i << " has " << numSectionRecords
                   << " records" << std::endl;
     }
-   
-    std::cerr << "Number of records = " << samIn.GetCurrentRecordCount() 
+
+    std::cerr << "Number of records = " << samIn.GetCurrentRecordCount()
               << std::endl;
-   
+
     return(0);
 }
 

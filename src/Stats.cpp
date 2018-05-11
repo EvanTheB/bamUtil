@@ -130,16 +130,15 @@ int Stats::execute(int argc, char **argv)
         LONG_INTPARAMETER("bufferSize", &bufferSize)
         LONG_INTPARAMETER("minMapQual", &minMapQual)
         LONG_STRINGPARAMETER("dbsnp", &dbsnp)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -174,7 +173,7 @@ int Stats::execute(int argc, char **argv)
     // Initialize start/end positions.
     myStartPos = 0;
     myEndPos = -1;
-    
+
     // Open the output qc file if applicable.
     IFILE baseQCPtr = NULL;
     if(!pBaseQC.IsEmpty() && !cBaseQC.IsEmpty())
@@ -268,7 +267,7 @@ int Stats::execute(int argc, char **argv)
                 maxRefLen = refLen + 1;
             }
         }
-        
+
         dbsnpListPtr = new PosList(refInfo.getNumEntries(),maxRefLen);
 
         if(fdbSnp==NULL)
@@ -292,7 +291,7 @@ int Stats::execute(int argc, char **argv)
             {
                 // Read the next line.
                 buffer.ReadLine(fdbSnp);
-                // If it does not have at least 2 columns, 
+                // If it does not have at least 2 columns,
                 // continue to the next line.
                 if (buffer.IsEmpty() || buffer[0] == '#') continue;
                 tokens.AddTokens(buffer);
@@ -303,7 +302,7 @@ int Stats::execute(int argc, char **argv)
                     std::cerr << "Improperly formatted region line, start position "
                               << "(2nd column) is not an integer: "
                               << tokens[1]
-                              << "; Skipping to the next line.\n";         
+                              << "; Skipping to the next line.\n";
                     continue;
                 }
 
@@ -314,7 +313,7 @@ int Stats::execute(int argc, char **argv)
                     // Reference id was found, so add it to the dbsnp
                     dbsnpListPtr->addPosition(refID, position);
                 }
-        
+
                 tokens.Clear();
                 buffer.Clear();
             }
@@ -337,7 +336,7 @@ int Stats::execute(int argc, char **argv)
     {
         qualCount[i] = 0;
     }
-    
+
     const int START_PHRED = 0;
     const int PHRED_DIFF = START_QUAL - START_PHRED;
     const int MAX_PHRED = MAX_QUAL - PHRED_DIFF;
@@ -346,7 +345,7 @@ int Stats::execute(int argc, char **argv)
     {
         phredCount[i] = 0;
     }
-    
+
     int refPos = 0;
     Cigar* cigarPtr = NULL;
     char cigarChar = '?';
@@ -372,7 +371,7 @@ int Stats::execute(int argc, char **argv)
                 // Check for no quality ('*').
                 if((qual[0] == '*') && (qual[1] == 0))
                 {
-                    // This record does not have a quality string, so no 
+                    // This record does not have a quality string, so no
                     // quality processing is necessary.
                 }
                 else
@@ -428,7 +427,7 @@ int Stats::execute(int argc, char **argv)
                         {
                             if(qual)
                             {
-                                std::cerr << "Invalid Quality found: " << qual[index] 
+                                std::cerr << "Invalid Quality found: " << qual[index]
                                           << ".  Must be between "
                                           << START_QUAL << " and " << MAX_QUAL << ".\n";
                             }
@@ -447,7 +446,7 @@ int Stats::execute(int argc, char **argv)
                             }
                             continue;
                         }
-                        
+
                         // Increment the count for this quality.
                         ++(qualCount[(int)(qual[index])]);
                         ++(phredCount[(int)(qual[index]) - PHRED_DIFF]);
@@ -481,7 +480,7 @@ int Stats::execute(int argc, char **argv)
         ifclose(baseQCPtr);
     }
 
-    std::cerr << "Number of records read = " << 
+    std::cerr << "Number of records read = " <<
         samIn.GetCurrentRecordCount() << std::endl;
 
     if(basic)
@@ -548,7 +547,7 @@ bool Stats::getNextSection(SamFile &samIn)
         myStartPos = 0;
         myEndPos = 0;
 
-        // Loop until the end of the file or the end of the file or 
+        // Loop until the end of the file or the end of the file or
         // a section is found.
         while(!sectionFound && !ifeof(myRegionList))
         {
@@ -559,7 +558,7 @@ bool Stats::getNextSection(SamFile &samIn)
                 // Nothing read, so continue to the next line.
                 continue;
             }
-        
+
             // A line was read, so parse it.
             myRegColumn.ReplaceColumns(myRegBuffer, '\t');
             if(myRegColumn.Length() < 3)
@@ -570,7 +569,7 @@ bool Stats::getNextSection(SamFile &samIn)
                           << "; Skipping to the next line.\n";
                 continue;
             }
-            
+
             // Check the columns.
             if(!myRegColumn[1].AsInteger(myStartPos))
             {
@@ -578,7 +577,7 @@ bool Stats::getNextSection(SamFile &samIn)
                 std::cerr << "Improperly formatted region line, start position "
                           << "(2nd column) is not an integer: "
                           << myRegColumn[1]
-                          << "; Skipping to the next line.\n";         
+                          << "; Skipping to the next line.\n";
             }
             else if(!myRegColumn[2].AsInteger(myEndPos))
             {
@@ -586,7 +585,7 @@ bool Stats::getNextSection(SamFile &samIn)
                 std::cerr << "Improperly formatted region line, end position "
                           << "(3rd column) is not an integer: "
                           << myRegColumn[2]
-                          << "; Skipping to the next line.\n";         
+                          << "; Skipping to the next line.\n";
             }
             else if((myStartPos >= myEndPos) && (myEndPos != -1))
             {
@@ -596,7 +595,7 @@ bool Stats::getNextSection(SamFile &samIn)
                           << myRegColumn[1]
                           << " >= "
                           << myRegColumn[2]
-                          << "; Skipping to the next line.\n";         
+                          << "; Skipping to the next line.\n";
             }
             else
             {

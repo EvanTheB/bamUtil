@@ -17,7 +17,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 // This file contains the processing for the executable option "findCigars"
-// which reads a SAM/BAM file and writes a SAM/BAM file with just the 
+// which reads a SAM/BAM file and writes a SAM/BAM file with just the
 // reads that contain cigars that have any of the specified CIGAR operations.
 
 #include <bitset>
@@ -93,23 +93,22 @@ int FindCigars::execute(int argc, char **argv)
         LONG_PARAMETER("nonM", &nonM)
         LONG_PARAMETER("noeof", &noeof)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
         // Set that the eof block is not required.
         BgzfFileType::setRequireEofBlock(false);
     }
-    
+
     // Check to see if the in file was specified, if not, report an error.
     if(inFile == "")
     {
@@ -174,7 +173,7 @@ int FindCigars::execute(int argc, char **argv)
     // Check that there is at least one cigar character to search for.
     if(!insert && !del && !pad && !skip && !hardClip && !softClip)
     {
-        std::cerr << "no CIGAR operations were specified, so no reads to output." 
+        std::cerr << "no CIGAR operations were specified, so no reads to output."
                   << std::endl;
         return(-1);
     }
@@ -228,9 +227,9 @@ int FindCigars::execute(int argc, char **argv)
             }
         }
     }
-    std::cerr << std::endl << "Number of records read = " << 
+    std::cerr << std::endl << "Number of records read = " <<
         samIn.GetCurrentRecordCount() << std::endl;
-    std::cerr << "Number of records written = " << 
+    std::cerr << "Number of records written = " <<
         samOut.GetCurrentRecordCount() << std::endl;
 
     // Since the reads were successful, return the status based

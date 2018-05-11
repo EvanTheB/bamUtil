@@ -73,10 +73,9 @@ int SplitChromosome::execute(int argc, char **argv)
         LONG_PARAMETER_GROUP("Output Type")
            EXCLUSIVE_PARAMETER("bamout", &bamOut)
            EXCLUSIVE_PARAMETER("samout", &samOut)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
@@ -87,7 +86,7 @@ int SplitChromosome::execute(int argc, char **argv)
         bamOut = true;
     }
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -121,7 +120,7 @@ int SplitChromosome::execute(int argc, char **argv)
     }
 
     SamFile samIn;
-    // Open the file for reading.   
+    // Open the file for reading.
     samIn.OpenForRead(inFile);
 
     // Read the sam header.
@@ -140,7 +139,7 @@ int SplitChromosome::execute(int argc, char **argv)
     SamFileWriter outFile;
 
     String outputName;
-    
+
     int32_t prevRefID = -2;
 
     int numSectionRecords = 0;
@@ -184,7 +183,7 @@ int SplitChromosome::execute(int argc, char **argv)
             prevRefID = samRecord.getReferenceID();
         }
 
-        numSectionRecords++;            
+        numSectionRecords++;
 
         // Successfully read a record from the file, so write it.
         outFile.WriteRecord(samHeader, samRecord);
@@ -198,7 +197,7 @@ int SplitChromosome::execute(int argc, char **argv)
                   << " has " << numSectionRecords << " records\n";
     }
 
-    std::cerr << "Number of records = " << samIn.GetCurrentRecordCount() 
+    std::cerr << "Number of records = " << samIn.GetCurrentRecordCount()
               << std::endl;
 
     fprintf(stderr, "Returning: %d (%s)\n", status, SamStatus::getStatusString(status));

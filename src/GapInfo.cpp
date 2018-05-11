@@ -82,16 +82,15 @@ int GapInfo::execute(int argc, char **argv)
         LONG_PARAMETER("checkStrand", &checkStrand)
         LONG_PARAMETER("noeof", &noeof)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -127,7 +126,7 @@ int GapInfo::execute(int argc, char **argv)
     }
 
     return(processFile(inFile.c_str(), outFile.c_str(),
-                       refFile, detailed, 
+                       refFile, detailed,
                        checkFirst, checkStrand));
 }
 
@@ -163,17 +162,17 @@ int GapInfo::processFile(const char* inputFileName, const char* outputFileName,
     {
         uint16_t samFlags = samRecord.getFlag();
 
-        if((!SamFlag::isMapped(samFlags)) || 
+        if((!SamFlag::isMapped(samFlags)) ||
            (!SamFlag::isMateMapped(samFlags)) ||
            (!SamFlag::isPaired(samFlags)) ||
-           (samFlags & SamFlag::SECONDARY_ALIGNMENT) || 
-           (samFlags & SamFlag::SUPPLEMENTARY_ALIGNMENT) || 
+           (samFlags & SamFlag::SECONDARY_ALIGNMENT) ||
+           (samFlags & SamFlag::SUPPLEMENTARY_ALIGNMENT) ||
            (SamFlag::isDuplicate(samFlags)) ||
            (SamFlag::isQCFailure(samFlags)))
         {
             // unmapped, mate unmapped, not paired,
             // not the primary alignment, supplementary alignment
-            // duplicate, fails vendor quality check 
+            // duplicate, fails vendor quality check
             continue;
         }
 
@@ -196,22 +195,22 @@ int GapInfo::processFile(const char* inputFileName, const char* outputFileName,
         }
         if((mateStart == readStart) && (SamFlag::isReverse(samFlags)))
         {
-            // read and mate start at the same position, so 
+            // read and mate start at the same position, so
             // only process the forward strand.
             continue;
         }
 
         // Process this read pair.
         int32_t readEnd = samRecord.get0BasedAlignmentEnd();
-        
+
         int32_t gapSize = mateStart - readEnd - 1;
 
         if(detailed)
         {
             // Output the gap info.
-            ifprintf(outFile, "%s\t%d\t%d", 
+            ifprintf(outFile, "%s\t%d\t%d",
                      samRecord.getReferenceName(), readEnd+1, gapSize);
-            
+
             // Check if it is not the first or if it is not the forward strand.
             if(checkFirst && !SamFlag::isFirstFragment(samFlags))
             {
@@ -237,7 +236,7 @@ int GapInfo::processFile(const char* inputFileName, const char* outputFileName,
             // Check the reference for 'N's.
             if(refPtr != NULL)
             {
-                genomeIndex_t chromStartIndex = 
+                genomeIndex_t chromStartIndex =
                     refPtr->getGenomePosition(samRecord.getReferenceName());
                 if(chromStartIndex == INVALID_GENOME_INDEX)
                 {
@@ -259,7 +258,7 @@ int GapInfo::processFile(const char* inputFileName, const char* outputFileName,
                     continue;
                 }
             }
-            
+
             // Update the gapInfo.
             gapInfoMap[gapSize]++;
         }
@@ -269,13 +268,13 @@ int GapInfo::processFile(const char* inputFileName, const char* outputFileName,
     {
         // Output the summary.
         ifprintf(outFile, "GapSize\tNumPairs\n");
-        for(std::map<int,int>::iterator iter = gapInfoMap.begin(); 
+        for(std::map<int,int>::iterator iter = gapInfoMap.begin();
             iter != gapInfoMap.end(); iter++)
         {
             ifprintf(outFile, "%d\t%d\n", (*iter).first, (*iter).second);
         }
     }
-    
+
 
     SamStatus::Status returnStatus = samIn.GetStatus();
     if(returnStatus == SamStatus::NO_MORE_RECS)

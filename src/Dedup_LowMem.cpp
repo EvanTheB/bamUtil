@@ -83,7 +83,7 @@ void Dedup_LowMem::printUsage(std::ostream& os)
     os << "\n" << std::endl;
 }
 
-int Dedup_LowMem::execute(int argc, char** argv) 
+int Dedup_LowMem::execute(int argc, char** argv)
 {
     /* --------------------------------
      * process the arguments
@@ -115,17 +115,16 @@ int Dedup_LowMem::execute(int argc, char** argv)
     parameters.addBool("verbose", &verboseFlag);
     parameters.addBool("noeof", &noeof);
     parameters.addBool("params", &params);
-    parameters.addPhoneHome(VERSION);
     myRecab.addRecabSpecificParameters(parameters);
 
     ParameterList inputParameters;
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             parameters.getLongParameterList()));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -180,7 +179,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
     {
         logFile = outFile + ".log";
     }
-    
+
     if(myDoRecab)
     {
         int status = myRecab.processRecabParam();
@@ -195,7 +194,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
     {
         inputParameters.Status();
     }
-    
+
     Logger::gLogger = new Logger(logFile.c_str(), verboseFlag);
 
     /* -------------------------------------------------------------------
@@ -294,9 +293,9 @@ int Dedup_LowMem::execute(int argc, char** argv)
         // let the user know we're not napping
         if (verboseFlag && (recordCount % 100000 == 0))
         {
-            Logger::gLogger->writeLog("recordCount=%u singleKeyMap=%u pairedKeyMap=%u, dictSize=%u", 
-                                      recordCount, myFragmentMap.size(), 
-                                      myPairedMap.size(), 
+            Logger::gLogger->writeLog("recordCount=%u singleKeyMap=%u pairedKeyMap=%u, dictSize=%u",
+                                      recordCount, myFragmentMap.size(),
+                                      myPairedMap.size(),
                                       myMateMap.size());
         }
     }
@@ -378,7 +377,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
         // if it's appropriate
         int flag = record.getFlag();
         if (foundDup)
-        {   
+        {
             // this record is a duplicate, so mark it.
             record.setFlag( flag | 0x400 );
             currentDupIndex++;
@@ -403,7 +402,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
         else
         {
             if(myForceFlag)
-            { 
+            {
                 // this is not a duplicate we've identified but we want to
                 // remove any duplicate marking
                 record.setFlag( flag & 0xfffffbff ); // unmark duplicate
@@ -415,7 +414,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
             }
             samOut.WriteRecord(header, record);
         }
-	
+
         // Let the user know we're still here
         if (verboseFlag && (currentIndex % 100000 == 0)) {
             Logger::gLogger->writeLog("recordCount=%u", currentIndex);
@@ -426,7 +425,7 @@ int Dedup_LowMem::execute(int argc, char** argv)
     samIn.Close();
     samOut.Close();
 
-    Logger::gLogger->writeLog("Successfully %s %u unpaired and %u paired duplicate reads", 
+    Logger::gLogger->writeLog("Successfully %s %u unpaired and %u paired duplicate reads",
                               removeFlag ? "removed" : "marked" ,
                               singleDuplicates,
                               pairedDuplicates/2);
@@ -458,13 +457,13 @@ void Dedup_LowMem::cleanupPriorReads(SamRecord* record)
         PairedKey pairedKey(emptyKey, tempKey2);
         pairedFinish = myPairedMap.lower_bound(pairedKey);
         mateStopPos =
-            SamHelper::combineChromPos(reference, 
+            SamHelper::combineChromPos(reference,
                                        coordinate);
     }
 
     // For each key k < fragmentFinish, release the record since we are
     // done with that position and it is not a duplicate.
-    for(FragmentMap::iterator iter = myFragmentMap.begin(); 
+    for(FragmentMap::iterator iter = myFragmentMap.begin();
         iter != fragmentFinish; iter++)
     {
         // If it is not paired, we are done with this record.
@@ -482,10 +481,10 @@ void Dedup_LowMem::cleanupPriorReads(SamRecord* record)
     }
 
     // Now do the same thing with the paired reads
-    for(PairedMap::iterator iter = myPairedMap.begin(); 
+    for(PairedMap::iterator iter = myPairedMap.begin();
         iter != pairedFinish; iter++)
     {
-        // These are not duplicates, but we are done with them, 
+        // These are not duplicates, but we are done with them,
         // so perform any additional handling.
         handleNonDuplicatePair();
     }
@@ -508,7 +507,7 @@ void Dedup_LowMem::cleanupPriorReads(SamRecord* record)
             break;
         }
         // Passed the mate, but it was not found.
-        handleMissingMate(mateIter->second.key.reference, 
+        handleMissingMate(mateIter->second.key.reference,
                           mateIter->first >> 32);
     }
     // Erase the entries.
@@ -523,7 +522,7 @@ void Dedup_LowMem::cleanupPriorReads(SamRecord* record)
 // determine whether the record's position is different from the previous record
 bool Dedup_LowMem::hasPositionChanged(SamRecord& record)
 {
-    if (lastReference != record.getReferenceID() || 
+    if (lastReference != record.getReferenceID() ||
         lastCoordinate < record.get0BasedPosition())
     {
         if (lastReference != record.getReferenceID())
@@ -547,22 +546,22 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
     static DupKey key;
     key.initKey(record, getLibraryID(record));
 
-    int flag = record.getFlag(); 
+    int flag = record.getFlag();
     bool recordPaired = SamFlag::isPaired(flag) && SamFlag::isMateMapped(flag);
     int sumBaseQual = getBaseQuality(record);
 
     int32_t chromID = record.getReferenceID();
     int32_t mateChromID = record.getMateReferenceID();
 
-    // If we are one-chrom and the mate is not on the same chromosome, 
+    // If we are one-chrom and the mate is not on the same chromosome,
     // mark it as not paired.
     if(myOneChrom && (chromID != mateChromID))
     {
         recordPaired = false;
     }
-    
+
     // Look in the fragment map to see if an entry for this key exists.
-    FragmentMapInsertReturn ireturn = 
+    FragmentMapInsertReturn ireturn =
         myFragmentMap.insert(std::make_pair(key, FragData()));
 
     FragData* fragData = &(ireturn.first->second);
@@ -570,13 +569,13 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
     // Enter the new record in the fragData if (any of the below):
     // 1) there is no previous entry for this key (ireturn.second == true)
     // or
-    // 2) the previous entry is not paired 
+    // 2) the previous entry is not paired
     //    AND
     //     a) the new record is paired
     //     or
     //     b) the new record has higher quality
     if((ireturn.second == true) ||
-       ((fragData->paired == false) && 
+       ((fragData->paired == false) &&
         (recordPaired || (sumBaseQual > fragData->sumBaseQual))))
     {
         // Check if this is a new key.
@@ -591,7 +590,7 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
         else if(fragData->paired == false)
         {
             // There was a previous record and it is not paired,
-            // so mark it as a duplicate. 
+            // so mark it as a duplicate.
             // Duplicate checking/marking for pairs is handled below.
             handleDuplicate(fragData->recordIndex);
         }
@@ -603,7 +602,7 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
     }
     else
     {
-        // Leave the old record in fragData.  
+        // Leave the old record in fragData.
         // If the new record is not paired, handle it as a duplicate.
         if(recordPaired == false)
         {
@@ -618,13 +617,13 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
         // Not paired, no more operations required, so return.
         return;
     }
-    
+
     // This is a paired record, so check for its mate.
-    uint64_t readPos = 
+    uint64_t readPos =
         SamHelper::combineChromPos(chromID,
                                    record.get0BasedPosition());
     uint64_t matePos =
-        SamHelper::combineChromPos(mateChromID, 
+        SamHelper::combineChromPos(mateChromID,
                                    record.get0BasedMatePosition());
     int mateIndex = -1;
     MateData* mateData = NULL;
@@ -632,16 +631,16 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
     // Check to see if the mate is prior to this record.
     if(matePos <= readPos)
     {
-        // The mate map is stored by the mate position, so look for this 
+        // The mate map is stored by the mate position, so look for this
         // record's position.
         // The mate should be in the mate map, so find it.
         std::pair<MateMap::iterator,MateMap::iterator> matches =
             myMateMap.equal_range(readPos);
         // Loop through the elements that matched the pos looking for the mate.
-        for(MateMap::iterator iter = matches.first; 
+        for(MateMap::iterator iter = matches.first;
             iter != matches.second; iter++)
         {
-            if(strcmp((*iter).second.readName.c_str(), 
+            if(strcmp((*iter).second.readName.c_str(),
                       record.getReadName()) == 0)
             {
                 // Found the match.
@@ -660,7 +659,7 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
         if(matePos >= readPos)
         {
             // Haven't gotten to the mate yet, so store this record.
-            MateMap::iterator mateIter = 
+            MateMap::iterator mateIter =
                 myMateMap.insert(std::make_pair(matePos, MateData()));
             mateIter->second.sumBaseQual = sumBaseQual;
             mateIter->second.recordIndex = recordCount;
@@ -679,7 +678,7 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
     PairedKey pkey(key, mateData->key);
 
     // Check to see if this pair is a duplicate.
-    PairedMapInsertReturn pairedReturn = 
+    PairedMapInsertReturn pairedReturn =
         myPairedMap.insert(std::make_pair(pkey,PairedData()));
     PairedData* storedPair = &(pairedReturn.first->second);
 
@@ -764,7 +763,7 @@ void Dedup_LowMem::checkDups(SamRecord& record, uint32_t recordCount)
 }
 
 
-// Finds the total base quality of a read 
+// Finds the total base quality of a read
 int Dedup_LowMem::getBaseQuality(SamRecord & record) {
     const char* baseQualities = record.getQuality();
     int readLength = record.getReadLength();
@@ -786,7 +785,7 @@ void Dedup_LowMem::buildReadGroupLibraryMap(SamFileHeader& header) {
     rgidLibMap.clear();
     numLibraries = 0;
     std::map<std::string,uint32_t> libNameMap;
-    
+
     SamHeaderRecord * headerRecord = header.getNextRGRecord();
     while(headerRecord != NULL) {
         std::string ID = headerRecord->getTagValue("ID");
@@ -795,7 +794,7 @@ void Dedup_LowMem::buildReadGroupLibraryMap(SamFileHeader& header) {
         if ( ID.empty() ) {
             std::string headerRecordString;
             headerRecord->appendString(headerRecordString);
-            Logger::gLogger->error("Cannot find readGroup ID information in the header line %s", 
+            Logger::gLogger->error("Cannot find readGroup ID information in the header line %s",
                                    headerRecordString.c_str());
         }
         if ( rgidLibMap.find(ID) != rgidLibMap.end() ) {
@@ -823,12 +822,12 @@ void Dedup_LowMem::buildReadGroupLibraryMap(SamFileHeader& header) {
     if (numLibraries > 0xff) {
         Logger::gLogger->error("More than 255 library names are identified. Dedup_LowMem currently only allows up to 255 library names");
     }
-}    
+}
 
 // get the libraryID of a record
 uint32_t Dedup_LowMem::getLibraryID(SamRecord& record, bool checkTags) {
     if ( ( checkTags == false ) && ( numLibraries <= 1 ) ) {
-        return 0; 
+        return 0;
     } else {
         char tag[3];
         char vtype;

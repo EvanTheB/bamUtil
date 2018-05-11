@@ -22,7 +22,6 @@
 #include "DumpHeader.h"
 #include "SamFile.h"
 #include "Parameters.h"
-#include "PhoneHome.h"
 
 void DumpHeader::printDumpHeaderDescription(std::ostream& os)
 {
@@ -46,20 +45,12 @@ void DumpHeader::printUsage(std::ostream& os)
 // Dump the specified Bam Index file.
 int DumpHeader::execute(int argc, char **argv)
 {
-    if(argc != 3)
+    if(argc != 4)
     {
-        String noPhArg = "--noPhoneHome";
-        if((argc != 4) || (noPhArg.SlowCompareToStem(argv[3]) != 0))
-        {
-            printUsage(std::cerr);
-            exit(-1);
-        }
+        printUsage(std::cerr);
+        exit(-1);
     }
-    else
-    {
-        PhoneHome::checkVersion(getProgramName(), VERSION);
-    }
-    
+
     // Dump the bam index.
     return(dumpHeader(argv[2]));
 }

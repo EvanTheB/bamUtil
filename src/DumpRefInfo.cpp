@@ -66,16 +66,15 @@ int DumpRefInfo::execute(int argc, char **argv)
         LONG_PARAMETER("noeof", &noeof)
         LONG_PARAMETER("printRecordRefs", &printRecordRefs)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -109,7 +108,7 @@ int DumpRefInfo::execute(int argc, char **argv)
 
     const SamReferenceInfo& refInfo = samHeader.getReferenceInfo();
     int numReferences = refInfo.getNumEntries();
-    
+
     for(int i = 0; i < numReferences; i++)
     {
         std::cout << "Reference Index " << i;
@@ -142,7 +141,7 @@ int DumpRefInfo::execute(int argc, char **argv)
                 if(prevID != -2)
                 {
                     std::cout << "\tRef ID: " << prevID
-                              << "\tRef Name: " << prevName 
+                              << "\tRef Name: " << prevName
                               << "\tNumRecs: " << recCount
                               << std::endl;
                 }
@@ -156,7 +155,7 @@ int DumpRefInfo::execute(int argc, char **argv)
         if(prevID != -2)
         {
             std::cout << "\tRef ID: " << prevID
-                      << "\tRef Name: " << prevName 
+                      << "\tRef Name: " << prevName
                       << "\tNumRecs: " << recCount
                       << std::endl;
         }

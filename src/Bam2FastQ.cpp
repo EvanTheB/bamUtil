@@ -168,16 +168,15 @@ int Bam2FastQ::execute(int argc, char **argv)
         LONG_STRINGPARAMETER("firstOut", &firstOut)
         LONG_STRINGPARAMETER("secondOut", &secondOut)
         LONG_STRINGPARAMETER("unpairedOut", &unpairedOut)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -222,7 +221,7 @@ int Bam2FastQ::execute(int argc, char **argv)
                 std::cerr << "ERROR: Invalid region string, '" << region
                           << "', the position, '" << posStr << "' is not an integer.\n";
                 return(-1);
-            }                
+            }
         }
     }
 
@@ -257,7 +256,7 @@ int Bam2FastQ::execute(int argc, char **argv)
 
     // Cannot specify both splitRG & firstOut/secondOut/unpairedOut
     // since it needs a different file for each RG.
-    if(mySplitRG && (!firstOut.IsEmpty() || 
+    if(mySplitRG && (!firstOut.IsEmpty() ||
                    !secondOut.IsEmpty() || !unpairedOut.IsEmpty()))
     {
         printUsage(std::cerr);
@@ -376,7 +375,7 @@ int Bam2FastQ::execute(int argc, char **argv)
         {
             mySecondFile = ifopen(secondOut, "w", myCompression);
         }
-    
+
         if(myUnpairedFile == NULL)
         {
             std::cerr << "Failed to open " << unpairedOut
@@ -475,7 +474,7 @@ int Bam2FastQ::execute(int argc, char **argv)
 
     samIn.Close();
     closeFiles();
-    
+
     // Output the results
     std::cerr << "\nFound " << myNumPairs << " read pairs.\n";
     std::cerr << "Found " << myNumUnpaired << " unpaired reads.\n";
@@ -564,9 +563,9 @@ void Bam2FastQ::handlePairedCoord(SamRecord& samRec)
     // This is a paired record, so check for its mate.
     readPos = SamHelper::combineChromPos(samRec.getReferenceID(),
                                          samRec.get0BasedPosition());
-    matePos = SamHelper::combineChromPos(samRec.getMateReferenceID(), 
+    matePos = SamHelper::combineChromPos(samRec.getMateReferenceID(),
                                          samRec.get0BasedMatePosition());
- 
+
     // Check to see if the mate is prior to this record.
     if(matePos <= readPos)
     {
@@ -730,13 +729,13 @@ void Bam2FastQ::writeFastQ(SamRecord& samRec, IFILE filePtr,
             ++myNumQualTagErrors;
             if(myNumQualTagErrors == 1)
             {
-                std::cerr << "Bam2FastQ: " << myQField.c_str() 
+                std::cerr << "Bam2FastQ: " << myQField.c_str()
                           << " tag was not found/invalid, so using the quality field in records without the tag\n";
             }
             quality = samRec.getQuality();
         }
     }
-    
+
     if(SamFlag::isReverse(flag) && myReverseComp)
     {
         // It is reverse, so reverse compliment the sequence
@@ -753,7 +752,7 @@ void Bam2FastQ::writeFastQ(SamRecord& samRec, IFILE filePtr,
             sequence[i] = (char)toupper(sequence[i]);
         }
     }
-    
+
     if(myRNPlus)
     {
 
@@ -777,7 +776,7 @@ void Bam2FastQ::cleanUpMateMap(uint64_t readPos, bool flushAll)
     firstRec = myMateMap.first();
     while(firstRec != NULL)
     {
-        uint64_t firstChromPos = 
+        uint64_t firstChromPos =
             SamHelper::combineChromPos(firstRec->getMateReferenceID(),
                                        firstRec->get0BasedMatePosition());
         if((firstChromPos < readPos) || flushAll)
@@ -844,7 +843,7 @@ void Bam2FastQ::closeFiles()
     }
 
     // Loop through the fastq map and close those files.
-    for (OutFastqMap::iterator it=myOutFastqs.begin(); 
+    for (OutFastqMap::iterator it=myOutFastqs.begin();
          it!=myOutFastqs.end(); ++it)
     {
         ifclose(it->second);

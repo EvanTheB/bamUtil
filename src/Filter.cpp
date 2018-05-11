@@ -47,7 +47,7 @@ void Filter::printUsage(std::ostream& os)
     os << "\t\t--noeof             : do not expect an EOF block on a bam file." << std::endl;
     os << "\t\t--qualityThreshold  : maximum sum of the mismatch qualities before marking\n"
               << "\t\t                      a read unmapped. (Defaults to 60)" << std::endl;
-    os << "\t\t--defaultQualityInt : quality value to use for mismatches that do not have a quality\n" 
+    os << "\t\t--defaultQualityInt : quality value to use for mismatches that do not have a quality\n"
               << "\t\t                      (Defaults to 20)" << std::endl;
     os << "\t\t--mismatchThreshold : decimal value indicating the maximum ratio of mismatches to\n"
               << "\t\t                      matches and mismatches allowed before clipping from the ends\n"
@@ -69,7 +69,7 @@ int Filter::execute(int argc, char **argv)
     uint32_t defaultQualityInt = 20;
     double mismatchThreshold = .10;
 
-    // Read in the parameters.    
+    // Read in the parameters.
     ParameterList inputParameters;
     BEGIN_LONG_PARAMETERS(longParameterList)
         LONG_STRINGPARAMETER("in", &inFile)
@@ -80,23 +80,22 @@ int Filter::execute(int argc, char **argv)
         LONG_INTPARAMETER("defaultQualityInt", &defaultQualityInt)
         LONG_DOUBLEPARAMETER("mismatchThreshold", &mismatchThreshold)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
         // Set that the eof block is not required.
         BgzfFileType::setRequireEofBlock(false);
     }
-    
+
     // Check to see if the in file was specified, if not, report an error.
     if(inFile == "")
     {
@@ -127,7 +126,7 @@ int Filter::execute(int argc, char **argv)
 
     // Open the bam file.
     SamFile samIn;
-    // Open the file for reading.   
+    // Open the file for reading.
     samIn.OpenForRead(inFile);
 
     // Open the output file.
@@ -145,7 +144,7 @@ int Filter::execute(int argc, char **argv)
     SamRecord samRecord;
 
     SamStatus::Status returnStatus = SamStatus::SUCCESS;
-    
+
     int clippedCount = 0;
     int mismatchThresholdFilterCount = 0;
     int qualityThresholdFilterCount = 0;
@@ -157,7 +156,7 @@ int Filter::execute(int argc, char **argv)
         //        std::string origCigarString = samRecord.getCigar();
         //        int32_t origPosition = samRecord.get0BasedPosition();
 
-        SamFilter::FilterStatus filterStatus = 
+        SamFilter::FilterStatus filterStatus =
             SamFilter::clipOnMismatchThreshold(samRecord, reference,
                                                mismatchThreshold);
 
@@ -178,9 +177,9 @@ int Filter::execute(int argc, char **argv)
             }
 
             // Now filter on mismatch quality.
-            filterStatus = 
+            filterStatus =
                 SamFilter::filterOnMismatchQuality(samRecord, reference,
-                                                   qualityThreshold, 
+                                                   qualityThreshold,
                                                    defaultQualityInt);
             if(filterStatus == SamFilter::FILTERED)
             {
@@ -196,10 +195,10 @@ int Filter::execute(int argc, char **argv)
 //         // write the read and the associated reference to a file.
 //         if(filterStatus != SamFilter::NONE)
 //         {
-//             uint32_t chrStart = 
+//             uint32_t chrStart =
 //                 reference.getGenomePosition(samRecord.getReferenceName());
 //             std::string referenceString;
-//             reference.getString(referenceString, 
+//             reference.getString(referenceString,
 //                                 chrStart + samRecord.get0BasedUnclippedStart(),
 //                                 samRecord.getReadLength());
 //             std:: cerr << samRecord.get0BasedPosition()
@@ -220,7 +219,7 @@ int Filter::execute(int argc, char **argv)
 //                        << "\n\n";
 //         }
     }
-    
+
     std::cerr << "Number of Reads Clipped by Filtering: "
               << clippedCount << "\n";
     std::cerr << "Number of Reads Filtered Due to MismatchThreshold: "

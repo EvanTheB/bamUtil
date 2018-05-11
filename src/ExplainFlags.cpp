@@ -26,7 +26,7 @@
 ExplainFlags::ExplainFlags()
     : BamExecutable()
 {
-    
+
 }
 
 void ExplainFlags::printExplainFlagsDescription(std::ostream& os)
@@ -64,10 +64,9 @@ int ExplainFlags::execute(int argc, char **argv)
         LONG_STRINGPARAMETER("hex", &hexFlag)
         LONG_INTPARAMETER("dec", &decFlag)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
@@ -94,7 +93,7 @@ int ExplainFlags::execute(int argc, char **argv)
     }
     if(hexFlag.Length() != 0)
     {
-        if((hexFlag.Length() >= 2) && hexFlag[0] == '0' && 
+        if((hexFlag.Length() >= 2) && hexFlag[0] == '0' &&
            ((hexFlag[1] == 'x') || (hexFlag[2] == 'X')))
         {
             // Already has the 0x at the beginning.
@@ -109,7 +108,7 @@ int ExplainFlags::execute(int argc, char **argv)
         }
     }
 
-    std::cout << "0x" << std::hex << decFlag 
+    std::cout << "0x" << std::hex << decFlag
               << " (" << std::dec << decFlag << "):\n";
 
     if(SamFlag::isPaired(decFlag)) { std::cout << "\tpaired\n"; }

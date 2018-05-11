@@ -186,15 +186,14 @@ int Recab::execute(int argc, char *argv[])
     parameters.addBool("verbose", &verboseFlag);
     parameters.addBool("noeof", &noeof);
     parameters.addBool("params", &params);
-    parameters.addPhoneHome(VERSION);
     addRecabSpecificParameters(parameters);
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             parameters.getLongParameterList()));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -229,12 +228,12 @@ int Recab::execute(int argc, char *argv[])
     {
         logFile = outFile + ".log";
     }
-  
+
     if(params)
     {
         inputParameters.Status();
     }
-    
+
     Logger::gLogger = new Logger(logFile.c_str(), verboseFlag);
 
     ////////////////
@@ -285,7 +284,7 @@ int Recab::execute(int argc, char *argv[])
 
     if((outFile[0] == '-') && (logFile[0] != '-'))
     {
-        // Since outFile is to stdout, and logfile isn't, pass logfile name 
+        // Since outFile is to stdout, and logfile isn't, pass logfile name
         modelFitPrediction(logFile);
     }
     else
@@ -302,7 +301,7 @@ int Recab::execute(int argc, char *argv[])
     samOut.OpenForWrite(outFile.c_str());
     samIn.ReadHeader(samHeader);
     samOut.WriteHeader(samHeader);
-    
+
     while(samIn.ReadRecord(samHeader, samRecord) == true)
     {
         // Recalibrate.
@@ -362,7 +361,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
     static std::string aligTypes;
 
     int seqLen = samRecord.getReadLength();
-    
+
     // Check if the parameters have been processed.
     if(!myParamsSetup)
     {
@@ -424,13 +423,13 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
         ++myNumBuildSkipped;
         return(false);
     }
-    
+
     chromosomeName = samRecord.getReferenceName();
     readGroup = samRecord.getString("RG").c_str();
 
     // Look for the read group in the map.
     // TODO - extra string constructor??
-    RgInsertReturn insertRet = 
+    RgInsertReturn insertRet =
         myRg2Id.insert(std::pair<std::string, uint16_t>(readGroup, 0));
     if(insertRet.second == true)
     {
@@ -454,8 +453,8 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
         throw std::runtime_error("Failed to setup Reference File.\n");
     }
 
-    genomeIndex_t mapPos = 
-        myReferenceGenome->getGenomePosition(chromosomeName.c_str(), 
+    genomeIndex_t mapPos =
+        myReferenceGenome->getGenomePosition(chromosomeName.c_str(),
                                              samRecord.get1BasedPosition());
 
     if(mapPos==INVALID_GENOME_INDEX)
@@ -469,7 +468,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
     if(!myQField.IsEmpty())
     {
         // Check if there is an old quality.
-        const String* oldQPtr = 
+        const String* oldQPtr =
             samRecord.getStringTag(myQField.c_str());
         if((oldQPtr != NULL) && (oldQPtr->Length() == seqLen))
         {
@@ -552,10 +551,10 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
         {
             // Complement the current base.
             // The prebase is already complemented.
-            data.curBase = 
+            data.curBase =
                 BaseAsciiMap::base2complement[(unsigned int)(data.curBase)];
         }
-        
+
         // Get the reference offset.
         refOffset = cigarPtr->getRefOffset(seqPos);
         if(refOffset == Cigar::INDEX_NA)
@@ -587,7 +586,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
         else
         {
             // Do not process if it is not cycle 0 and:
-            //   1) previous reference position not adjacent 
+            //   1) previous reference position not adjacent
             //      (not a match/mismatch)
             //   2) previous base is in dbsnp
             //   3) current base is in dbsnp
@@ -598,7 +597,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
                 prevRefOffset = refOffset;
                 continue;
             }
-            if(!(myDbsnpFile.IsEmpty()) && 
+            if(!(myDbsnpFile.IsEmpty()) &&
                (myDbSNP[refPos] ||
                 (!myKeepPrevDbsnp && myDbSNP[refPos - seqIncr])))
             {
@@ -608,7 +607,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
                 continue;
             }
        }
-        
+
         // Save the previous reference offset.
         prevRefOffset = refOffset;
 
@@ -628,7 +627,7 @@ bool Recab::processReadBuildTable(SamRecord& samRecord)
         }
 
         // Get quality char
-        data.qual = 
+        data.qual =
             BaseUtilities::getPhredBaseQuality(myQualityStrings.oldq[seqPos]);
 
         // skip bases with quality below the minimum set.
@@ -669,12 +668,12 @@ bool Recab::processReadApplyTable(SamRecord& samRecord)
         return(false);
     }
     ++myNumApplyReads;
-   
+
     readGroup = samRecord.getString("RG").c_str();
 
     // Look for the read group in the map.
     // TODO - extra string constructor??
-    RgInsertReturn insertRet = 
+    RgInsertReturn insertRet =
         myRg2Id.insert(std::pair<std::string, uint16_t>(readGroup, 0));
     if(insertRet.second == true)
     {
@@ -729,7 +728,7 @@ bool Recab::processReadApplyTable(SamRecord& samRecord)
     else
         reverse = false;
 
-    // Check which read - this will be the same for all positions, so 
+    // Check which read - this will be the same for all positions, so
     // do this outside of the smaller loop.
     if(!SamFlag::isPaired(flag) || SamFlag::isFirstFragment(flag))
         // Mark as first if it is not paired or if it is the
@@ -759,7 +758,7 @@ bool Recab::processReadApplyTable(SamRecord& samRecord)
         }
 
         // Get quality
-        data.qual = 
+        data.qual =
             BaseUtilities::getPhredBaseQuality(myQualityStrings.oldq[seqPos]);
 
         // skip bases with quality below the minimum set.
@@ -804,7 +803,7 @@ void Recab::modelFitPrediction(const char* outputBase)
 
     Logger::gLogger->writeLog("# Bases observed: %ld - #match: %ld; #mismatch: %ld",
                               myBasecounts, myBMatchCount, myBMismatchCount);
-    Logger::gLogger->writeLog("# Bases Skipped for DBSNP: %ld, for BaseQual < %ld: %ld, ref 'N': %ld", 
+    Logger::gLogger->writeLog("# Bases Skipped for DBSNP: %ld, for BaseQual < %ld: %ld, ref 'N': %ld",
                               myNumDBSnpSkips, myMinBaseQual, mySubMinQual, myAmbiguous);
     if(myNumQualTagErrors != 0)
     {
@@ -822,15 +821,15 @@ void Recab::modelFitPrediction(const char* outputBase)
         {
             modelfile = "";
         }
-        
+
         prediction.setErrorModel(&(hasherrormodel));
-        
+
         Logger::gLogger->writeLog("Start model fitting!");
         if(!prediction.fitModel(true,modelfile))
         {
             Logger::gLogger->error("Could not fit model!");
         }
-        
+
         hasherrormodel.addPrediction(prediction.getModel(),myBlendedWeight);
 
         if(outputBase[0] != '-')

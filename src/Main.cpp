@@ -46,7 +46,6 @@
 #include "Dedup_LowMem.h"
 #include "Recab.h"
 #include "Bam2FastQ.h"
-#include "PhoneHome.h"
 
 // May add option to print to console in red for errors.
 namespace console_color
@@ -280,14 +279,12 @@ int main(int argc, char ** argv)
                 catch (std::runtime_error e)
                 {
                     compStatus = "Exception";
-                    PhoneHome::completionStatus(compStatus.c_str());
                     std::string errorMsg = "Exiting due to ERROR:\n\t";
                     errorMsg += e.what();
                     std::cerr << errorMsg << std::endl;
                     return(-1);
                 }
                 compStatus = ret;
-                PhoneHome::completionStatus(compStatus.c_str());
                 delete bamExe;
                 bamExe = NULL;
             }
@@ -344,7 +341,6 @@ int main(int argc, char ** argv)
                 catch (std::runtime_error e)
                 {
                     compStatus = "Exception";
-                    PhoneHome::completionStatus(compStatus.c_str());
 
                     std::string errorMsg = "Exiting due to ERROR:\n\t";
                     errorMsg += e.what();
@@ -352,7 +348,6 @@ int main(int argc, char ** argv)
                     return(-1);
                 }
                 compStatus = ret;
-                PhoneHome::completionStatus(compStatus.c_str());
                 delete bamExe;
                 bamExe = NULL;
             }

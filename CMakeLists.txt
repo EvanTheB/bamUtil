@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(bamUtil)
 
-include_directories(${CMAKE_SOURCE_DIR}/../libStatGen/include)
+include_directories(${CMAKE_SOURCE_DIR}/libStatGen/include)
 
 execute_process(COMMAND date OUTPUT_VARIABLE DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND whoami OUTPUT_VARIABLE USER OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -90,5 +90,5 @@ set(SOURCE_FILES
     src/WriteRegion.h)
 
 add_executable(bam ${SOURCE_FILES})
-target_link_libraries(bam ${CMAKE_SOURCE_DIR}/../libStatGen/libStatGen.a)
+target_link_libraries(bam ${CMAKE_SOURCE_DIR}/libStatGen/libStatGen.a)
 target_link_libraries(bam libz.dylib)

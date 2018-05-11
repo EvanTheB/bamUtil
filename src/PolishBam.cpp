@@ -25,7 +25,6 @@
 #include "SamFile.h"
 #include "PolishBam.h"
 #include "Logger.h"
-#include "PhoneHome.h"
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -58,7 +57,7 @@ public:
   bool readLine();
   void readThru();
   void updateCurrentSequenceInfo();
-  static uint32_t tokenizeString(const char* s, 
+  static uint32_t tokenizeString(const char* s,
                                  std::vector<std::string>& tokens);
 };
 
@@ -141,25 +140,25 @@ void FastaFile::updateCurrentSequenceInfo() {
   vsMD5sums.push_back(md5string);
 }
 
-uint32_t FastaFile::tokenizeString(const char* s, 
+uint32_t FastaFile::tokenizeString(const char* s,
                                    std::vector<std::string>& tokens) {
     if ( !tokens.empty() ) {
         tokens.clear();
     }
 
-    // Assuming delimiters are space of tab, 
+    // Assuming delimiters are space of tab,
     // use stringstream to tokenize
-    // In order to accept other delimiters, 
+    // In order to accept other delimiters,
     // this routine needs to be rewritten
     std::stringstream ss (std::stringstream::in | std::stringstream::out);
     std::string tok;
-    
+
     ss << s;
-    
+
     while( ss >> tok ) {
         tokens.push_back(tok); // each token is considerd as strings
     }
-    
+
     return(tokens.size()); // return the number of tokenized elements
 }
 
@@ -174,18 +173,18 @@ This is a C++ version of Tom Blackwell's awk script (detailed description
 below) to add ReadGroup tag info. The C++ version takes each of the read group tag information as parameters instead of parsing the information from sequence.index file. Tom's awk script is modified to use as wrapper for this to be able to process BAM to BAM writing directly.
 Hyun Min Kang, March 22, 2010
 
-#  Add read group information to either a file or a stream (pipeline) 
-#  in .sam format.  There are three possible arguments;  each can be 
-#  set on the command line as  "var=value"  (no "-v" is needed).  
+#  Add read group information to either a file or a stream (pipeline)
+#  in .sam format.  There are three possible arguments;  each can be
+#  set on the command line as  "var=value"  (no "-v" is needed).
 #  For most uses, default values for the arguments will suffice.
-#  "indexfile" = path name to the 1000 Genomes "sequence.index" file.  
-#  "keylen" = length of the substring to be used as a run identifier.  
-#  "key" = identifier for current run, to be matched in column 3 of 
+#  "indexfile" = path name to the 1000 Genomes "sequence.index" file.
+#  "keylen" = length of the substring to be used as a run identifier.
+#  "key" = identifier for current run, to be matched in column 3 of
 #  the sequence.index file, also used as the "RG" tag on every line.
-#  "indexfile"  defaults to "sequence.index" if not set externally.  
-#  "keylen"  defaults to 9 characters, in current 1000 Genomes usage.  
-#  "key"  defaults to the first "keylen" characters from the name of 
-#  the first sequence read in the .sam file.  
+#  "indexfile"  defaults to "sequence.index" if not set externally.
+#  "keylen"  defaults to 9 characters, in current 1000 Genomes usage.
+#  "key"  defaults to the first "keylen" characters from the name of
+#  the first sequence read in the .sam file.
 #  Tom Blackwell,  University of Michigan,   March 16, 2010
 */
 
@@ -264,7 +263,7 @@ void checkOrAddStarts(std::vector<std::string>& headerLines, const char* type) {
 
 int PolishBam::execute(int argc, char ** argv)
 {
-  static struct option getopt_long_options[] = 
+  static struct option getopt_long_options[] =
     {
       // Input options
       { "fasta", required_argument, NULL, 'f'},
@@ -281,10 +280,6 @@ int PolishBam::execute(int argc, char ** argv)
       { "PG", required_argument, NULL, 0},
       { "CO", required_argument, NULL, 0},
       { "checkSQ", no_argument, NULL, 0},
-      { "noPhoneHome", no_argument, NULL, 'p'},
-      { "nophonehome", no_argument, NULL, 'P'},
-      { "phoneHomeThinning", required_argument, NULL, 't'},
-      { "phonehomethinning", required_argument, NULL, 'T'},
       { NULL, 0, NULL, 0 },
     };
 
@@ -293,11 +288,10 @@ int PolishBam::execute(int argc, char ** argv)
   --argc;
 
   int n_option_index = 0, c;
-  
+
   std::string sAS, sUR, sSP, sFasta, sInFile, sOutFile, sLogFile;
   bool bClear, bCheckSQ, bVerbose;
   std::vector<std::string> vsHDHeaders, vsRGHeaders, vsPGHeaders, vsCOHeaders;
-  bool noPhoneHome = false;
 
   bCheckSQ = bVerbose = false;
   bClear = true;
@@ -318,12 +312,6 @@ int PolishBam::execute(int argc, char ** argv)
     }
     else if ( c == 'l' ) {
 	sLogFile = optarg;
-    }
-    else if (( c == 'p' )||( c == 'P' )) {
-        noPhoneHome = true;
-    }
-    else if (( c == 't' )||( c == 'T' )) {
-        PhoneHome::allThinning = atoi(optarg);
     }
     else if ( strcmp(getopt_long_options[n_option_index].name,"AS") == 0 ) {
       sAS = optarg;
@@ -353,11 +341,6 @@ int PolishBam::execute(int argc, char ** argv)
       std::cerr << "Error: Unrecognized option " << getopt_long_options[n_option_index].name << std::endl;
       return(-1);
     }
-  }
-
-  if(!noPhoneHome)
-  {
-      PhoneHome::checkVersion(getProgramName(), VERSION);
   }
 
   if ((sLogFile.compare("__NONE__") == 0) ||  sLogFile.empty())
@@ -447,7 +430,7 @@ int PolishBam::execute(int argc, char ** argv)
       Logger::gLogger->writeLog("Reading the reference file %s",sFasta.c_str());
       fastaFile.readThru();
       fastaFile.close();
-      Logger::gLogger->writeLog("Finished reading the reference file %s",sFasta.c_str());      
+      Logger::gLogger->writeLog("Finished reading the reference file %s",sFasta.c_str());
     }
     else {
       Logger::gLogger->error("Failed to open reference file %s",sFasta.c_str());
@@ -492,12 +475,12 @@ int PolishBam::execute(int argc, char ** argv)
 	Logger::gLogger->error("SequenceLength is not identical between fasta and input BAM file");
       }
       else {
-	if ( !sAS.empty() ) 
+	if ( !sAS.empty() )
 	  samHeader.setSQTag("AS",sAS.c_str(),fastaFile.vsSequenceNames[i].c_str());
 	samHeader.setSQTag("M5",fastaFile.vsMD5sums[i].c_str(),fastaFile.vsSequenceNames[i].c_str());
-	if ( !sUR.empty() ) 
+	if ( !sUR.empty() )
 	  samHeader.setSQTag("UR",sUR.c_str(),fastaFile.vsSequenceNames[i].c_str());
-	if ( !sSP.empty() ) 
+	if ( !sSP.empty() )
 	  samHeader.setSQTag("SP",sSP.c_str(),fastaFile.vsSequenceNames[i].c_str());
       }
     }
@@ -507,7 +490,7 @@ int PolishBam::execute(int argc, char ** argv)
     Logger::gLogger->writeLog("Skipped checking the consistency of SQ tags");
   }
 
-  // go over the headers again, 
+  // go over the headers again,
   // assuming order of HD, SQ, RG, PG, CO, and put proper tags at the end of the original tags
 
   Logger::gLogger->writeLog("Creating the header of new output file");
@@ -586,7 +569,7 @@ int PolishBam::execute(int argc, char ** argv)
       }
     }
   }
-  
+
   Logger::gLogger->writeLog("Writing output BAM file");
   SamRecord samRecord;
   while (samIn.ReadRecord(samHeader, samRecord) == true) {

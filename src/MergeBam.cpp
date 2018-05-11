@@ -27,7 +27,6 @@
 #include "SamFile.h"
 #include "MergeBam.h"
 #include "Logger.h"
-#include "PhoneHome.h"
 
 ////////////////////////////////////////////////////////////////////////
 // MergeBam : Merge multiple BAM files appending ReadGroup IDs if necessary
@@ -113,7 +112,7 @@ void MergeBam::printUsage(std::ostream& os)
 // main function
 int MergeBam::execute(int argc, char ** argv)
 {
-  static struct option getopt_long_options[] = 
+  static struct option getopt_long_options[] =
     {
       // Input options
       { "list", required_argument, NULL, 'l'},
@@ -124,10 +123,6 @@ int MergeBam::execute(int argc, char ** argv)
       { "ignorePI", no_argument, NULL, 'I'},
       { "regions", required_argument, NULL, 'r'},
       { "regionFile", required_argument, NULL, 'R'},
-      { "noPhoneHome", no_argument, NULL, 'p'},
-      { "nophonehome", no_argument, NULL, 'P'},
-      { "phoneHomeThinning", required_argument, NULL, 't'},
-      { "phonehomethinning", required_argument, NULL, 'T'},
       { NULL, 0, NULL, 0 },
     };
 
@@ -140,7 +135,6 @@ int MergeBam::execute(int argc, char ** argv)
   char c;
   bool b_verbose = false;
   bool ignorePI = false;
-  bool noPhoneHome = false;
   String regions = "";
   std::string regionFile = "";
   vector<std::string> vs_in_bam_files; // input BAM files
@@ -175,11 +169,9 @@ int MergeBam::execute(int argc, char ** argv)
       break;
     case 'p':
     case 'P':
-      noPhoneHome = true;
       break;
     case 't':
     case 'T':
-        PhoneHome::allThinning = atoi(optarg);
       break;
     default:
       fprintf(stderr,"Unrecognized option %s\n",getopt_long_options[n_option_index].name);
@@ -187,11 +179,6 @@ int MergeBam::execute(int argc, char ** argv)
     }
   }
 
-  if(!noPhoneHome)
-  {
-      PhoneHome::checkVersion(getProgramName(), VERSION);
-  }
-  
   if ( s_logger.empty() ) {
       if(s_out.empty())
       {
@@ -264,7 +251,7 @@ int MergeBam::execute(int argc, char ** argv)
   Logger::gLogger->writeLog("Output BAM file : %s",s_out.c_str());
   Logger::gLogger->writeLog("Output log file : %s",s_logger.c_str());
   Logger::gLogger->writeLog("Verbose mode    : %s",b_verbose ? "On" : "Off");
-  
+
   vector<ReadGroup> v_readgroups;      // readGroups corresponding to BAM file
   vector<ReadGroup> v_uniq_readgroups; // unique readGroups written to header
 
@@ -293,7 +280,7 @@ int MergeBam::execute(int argc, char ** argv)
   SamFile *p_in_bams = new SamFile[n_bams];
   SamFileHeader *p_headers = new SamFileHeader[n_bams];
 
-  // read each BAM file and its header, 
+  // read each BAM file and its header,
   // making sure that the headers are identical
 
   std::string firstHeaderNoRGPG = "";
@@ -308,7 +295,7 @@ int MergeBam::execute(int argc, char ** argv)
           Logger::gLogger->error("Cannot open BAM file %s for reading",vs_in_bam_files[i].c_str());
       }
       p_in_bams[i].setSortedValidation(SamFile::COORDINATE);
-      
+
       p_in_bams[i].ReadHeader(p_headers[i]);
 
       if((myRegionFile != NULL) || (myRegionArrayIndex != -1))
@@ -382,7 +369,7 @@ int MergeBam::execute(int argc, char ** argv)
               }
           }
       }
-      
+
       // Routine for writing output BAM file
       uint32_t nWrittenRecords = 0; // number of written BAM records
       while(true) {
@@ -395,11 +382,11 @@ int MergeBam::execute(int argc, char ** argv)
                   min_idx = static_cast<int>(i);
               }
           }
-          
+
           // If every file reached EOF, exit the loop
           if ( min_idx < 0 ) break;
-          
-          
+
+
           // If adding read groups, add the tag.
           if(!v_readgroups.empty())
           {
@@ -412,8 +399,8 @@ int MergeBam::execute(int argc, char ** argv)
           if ( nWrittenRecords % 1000000 == 0 ) {
               Logger::gLogger->writeLog("Writing %u records to the output file",nWrittenRecords);
           }
-          
-          // Read a record from the input BAM file 
+
+          // Read a record from the input BAM file
           if ( p_in_bams[min_idx].ReadRecord(p_headers[min_idx], p_records[min_idx]) ) {
               if ( p_records[min_idx].isValid(p_headers[min_idx]) ) {
                   p_gcoordinates[min_idx] = getGenomicCoordinate(p_records[min_idx]);
@@ -507,7 +494,7 @@ bool parseListFile(std::string& listFile, vector<std::string>& bamFiles, vector<
       }*/
 
     bamFiles.push_back(tokens[columnDict["BAM"]]);
-    std::string readGroupID = tokens[columnDict["ID"]]; 
+    std::string readGroupID = tokens[columnDict["ID"]];
     std::string headerLine = "@RG";
     for(uint32_t i=0; i < NUM_COLS; ++i) {
       if ( columnDict.find(columnNames[i]) != columnDict.end() ) {
@@ -566,7 +553,7 @@ void parseOutRG(SamFileHeader& header, std::string& noRgPgString, SamFileHeader*
                 // This is an RG line.
                 // First check if this RG is already included in the new header.
                 SamHeaderRG* prevRG = newHeader->getRG(rec->getTagValue("ID"));
-                
+
                 if(prevRG != NULL)
                 {
                     // This RG already exists, check that they are the same.
@@ -678,7 +665,7 @@ void parseOutRG(SamFileHeader& header, std::string& noRgPgString, SamFileHeader*
                 // This is a PG line.
                 // First check if this PG is already included in the new header.
                 SamHeaderPG* prevPG = newHeader->getPG(rec->getTagValue("ID"));
-                
+
                 if(prevPG != NULL)
                 {
                     // This PG already exists, check if they are the same.
@@ -751,13 +738,13 @@ uint32_t addTokenizedStrings(const std::string& str, const std::string& delimite
 {
   std::string::size_type delimPos = 0, tokenPos = 0, pos = 0;
   uint32_t numAddedTokens = 0;
-  
+
   if( str.length() < 1 )  return 0;
 
   while( true ){
     delimPos = str.find_first_of(delimiters, pos);
     tokenPos = str.find_first_not_of(delimiters, pos);
-    
+
     if(std::string::npos != delimPos){
       if(std::string::npos != tokenPos){
 	if( tokenPos < delimPos ) {
@@ -774,12 +761,12 @@ uint32_t addTokenizedStrings(const std::string& str, const std::string& delimite
 	++numAddedTokens;
       }
       pos = delimPos+1;
-    } 
+    }
     else {
       if( std::string::npos != tokenPos ){
 	tokens.push_back(str.substr(pos));
 	++numAddedTokens;
-      } 
+      }
       else {
 	tokens.push_back("");
 	++numAddedTokens;
@@ -895,15 +882,15 @@ bool MergeBam::getNextSection(SamFile *in_bams, uint32_t numBams)
         // Subtract 1 from start since it is 1-based inclusive, but
         // SetReadSection expects 0-based inclusive
         --start;
-        // Do not need to subtract from end since it is 1-based 
+        // Do not need to subtract from end since it is 1-based
         // exclusive which is the same as 0-based exclusive that
         // SetReadSection expects.
     }
-  
+
     // Set the next section in every bam.
     for(uint32_t i = 0; i < numBams; ++i)
     {
-        // SetReadSection start parameter is 0-based inclusive, 
+        // SetReadSection start parameter is 0-based inclusive,
         // start is 1-based inclusive, so subtract 1 from start
         // SetReadSection end parameter is 0-based exclusive,
         // end is 1-based inclusive, which is the same as 0-based exclusive

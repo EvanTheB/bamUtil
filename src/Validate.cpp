@@ -54,7 +54,7 @@ void Validate::printUsage(std::ostream& os)
     os << "\t\t                      0 indicates not to read/validate anything." << std::endl;
     os << "\t\t--verbose           : Print specific error details rather than just a summary" << std::endl;
     os << "\t\t--printableErrors   : Maximum number of records with errors to print the details of\n"
-              << "\t\t                      before suppressing them when in verbose (defaults to 100)" 
+              << "\t\t                      before suppressing them when in verbose (defaults to 100)"
               << std::endl;
     os << "\t\t--disableStatistics : Turn off statistic generation" << std::endl;
     os << "\t\t--params            : Print the parameter settings" << std::endl;
@@ -92,10 +92,9 @@ int Validate::execute(int argc, char **argv)
         EXCLUSIVE_PARAMETER("so_flag", &so_flag)
         EXCLUSIVE_PARAMETER("so_coord", &so_coord)
         EXCLUSIVE_PARAMETER("so_query", &so_query)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
 
     // parameters start at index 2 rather than 1.
@@ -106,7 +105,7 @@ int Validate::execute(int argc, char **argv)
     if(so_flag)
     {
         sortType = SamFile::FLAG;
-    } 
+    }
     else if(so_coord)
     {
         sortType = SamFile::COORDINATE;
@@ -115,8 +114,8 @@ int Validate::execute(int argc, char **argv)
     {
         sortType = SamFile::QUERY_NAME;
     }
-   
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
@@ -151,11 +150,11 @@ int Validate::execute(int argc, char **argv)
     // Since we want to accumulate multiple errors, use RETURN rather
     // than throwing exceptions.
     SamFile samIn(ErrorHandler::RETURN);
-    // Open the file for reading.   
+    // Open the file for reading.
     if(!samIn.OpenForRead(inFile))
     {
         fprintf(stderr, "Failed opening the SAM/BAM file, returning: %d (%s)\n",
-                samIn.GetStatus(), 
+                samIn.GetStatus(),
                 SamStatus::getStatusString(samIn.GetStatus()));
         fprintf(stderr, "%s\n", samIn.GetStatusMessage());
         return(samIn.GetStatus());
@@ -174,8 +173,8 @@ int Validate::execute(int argc, char **argv)
     SamFileHeader samHeader;
     if(!samIn.ReadHeader(samHeader))
     {
-        fprintf(stderr, "Failed header validation, returning: %d (%s)\n", 
-                samIn.GetStatus(), 
+        fprintf(stderr, "Failed header validation, returning: %d (%s)\n",
+                samIn.GetStatus(),
                 SamStatus::getStatusString(samIn.GetStatus()));
         fprintf(stderr, "%s\n", samIn.GetStatusMessage());
         return(samIn.GetStatus());

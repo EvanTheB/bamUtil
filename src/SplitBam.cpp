@@ -28,12 +28,11 @@
 #include "SamFile.h"
 #include "Logger.h"
 #include "BgzfFileType.h"
-#include "PhoneHome.h"
 
 ////////////////////////////////////////////////////////////////////////
-// SplitBam : 
+// SplitBam :
 //   Split a BAM file into multiple BAM files based on ReadGroup
-// 
+//
 // Copyright (c) 2010 Hyun Min Kang
 // Last modified Jun 10, 2010
 // Modified 1/16/2012 by Mary Kate Trost to put into bamUtil.
@@ -93,7 +92,7 @@ void SplitBam::printUsage(std::ostream& os)
 // main function
 int SplitBam::execute(int argc, char ** argv)
 {
-  static struct option getopt_long_options[] = 
+  static struct option getopt_long_options[] =
     {
       // Input options
       { "in", required_argument, NULL, 'i'},
@@ -101,10 +100,6 @@ int SplitBam::execute(int argc, char ** argv)
       { "verbose", no_argument, NULL, 'v'},
       { "noeof", no_argument, NULL, 'n'},
       { "log", required_argument, NULL, 'L'},
-      { "noPhoneHome", no_argument, NULL, 'p'},
-      { "nophonehome", no_argument, NULL, 'P'},
-      { "phoneHomeThinning", required_argument, NULL, 't'},
-      { "phonehomethinning", required_argument, NULL, 'T'},
       { NULL, 0, NULL, 0 },
     };
 
@@ -112,7 +107,6 @@ int SplitBam::execute(int argc, char ** argv)
   char c;
   bool b_verbose = false;
   bool noeof = false;
-  bool noPhoneHome = false;
 
   std::string s_in, s_out, s_logger;
 
@@ -135,11 +129,9 @@ int SplitBam::execute(int argc, char ** argv)
       break;
     case 'p':
     case 'P':
-      noPhoneHome = true;
       break;
     case 't':
     case 'T':
-      PhoneHome::allThinning = atoi(optarg);
       break;
     default:
       fprintf(stderr,"ERROR: Unrecognized option %s\n",getopt_long_options[n_option_index].name);
@@ -158,12 +150,7 @@ int SplitBam::execute(int argc, char ** argv)
           s_logger = s_out + ".log";
       }
   }
-  
-  if(!noPhoneHome)
-  {
-      PhoneHome::checkVersion(getProgramName(), VERSION);
-  }
-  
+
   if(noeof)
   {
       // Set that the eof block is not required.
@@ -190,7 +177,7 @@ int SplitBam::execute(int argc, char ** argv)
   Logger::gLogger->writeLog("Output log file : %s",s_logger.c_str());
   Logger::gLogger->writeLog("Verbose mode    : %s",b_verbose ? "On" : "Off");
   Logger::gLogger->writeLog("BGFZ EOF indicator : %s",noeof ? "Off" : "On");
-  
+
   SamFile inBam;
   SamFileHeader inHeader;
   std::map<std::string,uint32_t> msRGidx;
@@ -216,12 +203,12 @@ int SplitBam::execute(int argc, char ** argv)
       msRGidx[sRGID] = idx;
       SamFile* pNewFile = new SamFile;
       vpOutBams.push_back(pNewFile);
-      
+
       std::string outFileName = s_out + "." + sRGID + ".bam";
       if ( !pNewFile->OpenForWrite(outFileName.c_str()) ) {
 	Logger::gLogger->error("Cannot open BAM file %s for writing",outFileName.c_str());
       }
-      
+
       SamFileHeader* pNewHeader = new SamFileHeader(inHeader);
       vpOutHeaders.push_back(pNewHeader);
     }
@@ -231,7 +218,7 @@ int SplitBam::execute(int argc, char ** argv)
   for(uint32_t i=0; i < vsRGIDs.size(); ++i) {
     Logger::gLogger->writeLog("\t%d: %s",i+1,vsRGIDs[i].c_str());
   }
-  
+
 
   if ( vsRGIDs.size() == 0 ) {
     Logger::gLogger->error("Only %u readGroups are observed",vsRGIDs.size());

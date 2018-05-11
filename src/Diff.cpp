@@ -17,7 +17,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 // This file contains the processing for the executable option "diff"
-// which reads an SAM/BAM file and writes a SAM/BAM file with the 
+// which reads an SAM/BAM file and writes a SAM/BAM file with the
 // specified previous values restored if the values are known.
 
 #include "Diff.h"
@@ -163,15 +163,14 @@ int Diff::execute(int argc, char **argv)
         LONG_INTPARAMETER("posDiff", &myThreshold)
         LONG_PARAMETER("noeof", &noeof)
         LONG_PARAMETER("params", &params)
-        LONG_PHONEHOME(VERSION)
         END_LONG_PARAMETERS();
-   
-    inputParameters.Add(new LongParameters ("Input Parameters", 
+
+    inputParameters.Add(new LongParameters ("Input Parameters",
                                             longParameterList));
-    
+
     // parameters start at index 2 rather than 1.
     inputParameters.Read(argc, argv, 2);
-    
+
     myCompCigar = !noCigar;
     myCompPos = !noPos;
 
@@ -189,14 +188,14 @@ int Diff::execute(int argc, char **argv)
         myEveryTag = true;
     }
 
-    // If no eof block is required for a bgzf file, set the bgzf file type to 
+    // If no eof block is required for a bgzf file, set the bgzf file type to
     // not look for it.
     if(noeof)
     {
         // Set that the eof block is not required.
         BgzfFileType::setRequireEofBlock(false);
     }
-    
+
     // Check to see if the in file was specified, if not, report an error.
     if(inFile1 == "")
     {
@@ -228,7 +227,7 @@ int Diff::execute(int argc, char **argv)
 
         // Set the diff filenames.
         myBamDiffName = myDiffFileName;
-        
+
         String baseName = myDiffFileName.Left(extIndex);
         // Start after the last '/' and go to the last '.'
         // Note: if not found, -1 is returned.
@@ -351,7 +350,7 @@ int Diff::execute(int argc, char **argv)
             releaseSamRecord(tempRecord);
             tempRecord = myFile2Unmatched.getFirst();
         }
-        
+
         // Prune the unmatched lists for any records that are further from
         // the current record than the threshold.
         tempRecord = myFile1Unmatched.getFirst();
@@ -376,17 +375,17 @@ int Diff::execute(int argc, char **argv)
         else if(lessThan(rec1, rec2))
         {
             // Rec1 is smaller or equal to rec2, so process rec1.
-            // Look up rec1 in file2's unmatched list.            
-            tempRecord = 
+            // Look up rec1 in file2's unmatched list.
+            tempRecord =
                 myFile2Unmatched.removeFragmentMatch(*rec1);
 
             if((tempRecord == NULL) && (rec2 != NULL))
             {
-                // Didn't find the match in the previous file2 records, 
+                // Didn't find the match in the previous file2 records,
                 // and there are more records in file2 that will need
                 // to compare against this one, so store this record.
                 myFile1Unmatched.addUnmatchedRecord(*rec1);
-                
+
                 // Need to get a new record since this one is stored for later use.
                 rec1 = getSamRecord();
             }
@@ -404,17 +403,17 @@ int Diff::execute(int argc, char **argv)
         else
         {
             // Rec2 is smaller than rec1, so process rec2.
-             // Look up rec2 in file1's unmatched list.            
-            tempRecord = 
+             // Look up rec2 in file1's unmatched list.
+            tempRecord =
                 myFile1Unmatched.removeFragmentMatch(*rec2);
 
             if((tempRecord == NULL) && (rec1 != NULL))
             {
-                // Didn't find the match in the previous file1 records, 
+                // Didn't find the match in the previous file1 records,
                 // and there are more records in file1 that will need
                 // to compare against this one, so store this record.
                 myFile2Unmatched.addUnmatchedRecord(*rec2);
-                
+
                 // Need to get a new record.
                 rec2 = getSamRecord();
             }
@@ -434,7 +433,7 @@ int Diff::execute(int argc, char **argv)
     if(myNumPoolOverflows != 0)
     {
         std::cerr << "WARNING: Matching records may incorrectly be reported as "
-                  << "mismatches due to running out of available records " 
+                  << "mismatches due to running out of available records "
                   << myNumPoolOverflows
                   << " time";
         if(myNumPoolOverflows != 1)
@@ -471,7 +470,7 @@ bool Diff::matchingRecs(SamRecord* rec1, SamRecord* rec2)
     }
 
     // Have 2 records, so compare them.
-    if((SamFlag::getFragmentType(rec1->getFlag()) == 
+    if((SamFlag::getFragmentType(rec1->getFlag()) ==
         SamFlag::getFragmentType(rec2->getFlag())) &&
        (strcmp(rec1->getReadName(),
                rec2->getReadName()) == 0))
@@ -481,7 +480,7 @@ bool Diff::matchingRecs(SamRecord* rec1, SamRecord* rec2)
     }
     return(false);
 }
- 
+
 bool Diff::lessThan(SamRecord* rec1, SamRecord* rec2, int threshold)
 {
     if(rec1 == NULL)
@@ -773,7 +772,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
         // Neither is set, so no diffs.
         return(false);
     }
-    
+
     myTags1.Clear();
     myTags2.Clear();
     char tagDelim = '\t';
@@ -807,7 +806,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
         // Compare the tags.
         if(((rec1 != NULL) &&
             (!rec1->getTagsString(myTags.c_str(), myTags1, tagDelim))) ||
-           ((rec2 != NULL) && 
+           ((rec2 != NULL) &&
             (!rec2->getTagsString(myTags.c_str(), myTags2, tagDelim))))
         {
             // Failure reading tags.
@@ -816,7 +815,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
         }
     }
 
-    if(((rec1 == NULL) && (rec2 != NULL)) || 
+    if(((rec1 == NULL) && (rec2 != NULL)) ||
        ((rec1 != NULL) && (rec2 == NULL)))
     {
         // Only one of the records is set.
@@ -843,11 +842,11 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
         myDiffStruct.seqDiff = false;
         myDiffStruct.qualDiff = false;
         myDiffStruct.tagsDiff = false;
-   
+
         // Check if there are any differences.
-        
+
         // Check if different chromosomes or positions.
-        if(myCompPos && 
+        if(myCompPos &&
            ((rec1->getReferenceID() != rec2->getReferenceID()) ||
             (rec1->get1BasedPosition() != rec2->get1BasedPosition())))
         {
@@ -866,7 +865,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
         {
             myDiffStruct.mapqDiff = true;
         }
-        if(myCompMate && 
+        if(myCompMate &&
            ((rec1->getMateReferenceID() != rec2->getMateReferenceID()) ||
             (rec1->get1BasedMatePosition() != rec2->get1BasedMatePosition())))
         {
@@ -889,10 +888,10 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
             myDiffStruct.tagsDiff = true;
         }
     }
-    return(myDiffStruct.posDiff  || myDiffStruct.cigarDiff || 
-           myDiffStruct.flagDiff || myDiffStruct.mapqDiff || 
-           myDiffStruct.mateDiff || myDiffStruct.isizeDiff || 
-           myDiffStruct.seqDiff  || myDiffStruct.qualDiff || 
+    return(myDiffStruct.posDiff  || myDiffStruct.cigarDiff ||
+           myDiffStruct.flagDiff || myDiffStruct.mapqDiff ||
+           myDiffStruct.mateDiff || myDiffStruct.isizeDiff ||
+           myDiffStruct.seqDiff  || myDiffStruct.qualDiff ||
            myDiffStruct.tagsDiff);
 }
 
@@ -910,7 +909,7 @@ bool Diff::writeReadName(SamRecord& record)
             // Failed to write the entire read name.
             return(false);
         }
-    }  
+    }
     return(true);
 }
 
@@ -1010,12 +1009,12 @@ SamRecord* Diff::UnmatchedRecords::removeFragmentMatch(SamRecord& record)
 {
     // Lookup which read this is, first, last, or intermediate
     uint16_t flag = record.getFlag();
-    
+
     UnmatchedRecords::mapType* mapPtr =
         &(myFragmentMaps[SamFlag::getFragmentType(flag)]);
-    
+
     SamRecord* returnRecord = NULL;
-    
+
     // Check to see if it was found.
     myUnmatchedFileIter = mapPtr->find(record.getReadName());
     if(myUnmatchedFileIter != mapPtr->end())
@@ -1041,8 +1040,8 @@ SamRecord* Diff::UnmatchedRecords::removeFirst()
 
     // Get the first entry from the list.
     SamRecord* returnRec = myListUnmatched.front();
-    
-    // Remove the record from the map, by first looking up which read this is, 
+
+    // Remove the record from the map, by first looking up which read this is,
     // first, last, or intermediate
     uint16_t flag = returnRec->getFlag();
 
@@ -1054,7 +1053,7 @@ SamRecord* Diff::UnmatchedRecords::removeFirst()
 
     // Remove it from the list.
     myListUnmatched.pop_front();
-    
+
     return(returnRec);
 }
 
@@ -1069,6 +1068,6 @@ SamRecord* Diff::UnmatchedRecords::getFirst()
 
     // Get the first entry from the list.
     SamRecord* returnRec = myListUnmatched.front();
-    
+
     return(returnRec);
 }
