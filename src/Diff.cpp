@@ -28,6 +28,12 @@
 #include "SamFlag.h"
 #include "SamRecordHelper.h"
 
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
+#include <algorithm>
+
 const char* Diff::FLAG_DIFF_TAG = "ZF";
 const char* Diff::POS_DIFF_TAG = "ZP";
 const char* Diff::CIGAR_DIFF_TAG = "ZC";
@@ -611,7 +617,6 @@ void Diff::writeBamDiffs(SamRecord* rec1, SamRecord* rec2)
     }
 }
 
-
 void Diff::writeDiffDiffs(SamRecord* rec1, SamRecord* rec2)
 {
     if(!getDiffs(rec1, rec2))
@@ -765,6 +770,36 @@ void Diff::writeDiffs(SamRecord* rec1, SamRecord* rec2)
 }
 
 
+template<typename Out>
+static void split(const std::string &s, char delim, Out result) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    return elems;
+}
+
+std::string sort_tabbed(const std::string &s) {
+    //https://stackoverflow.com/questions/1430757/c-vector-to-string
+    //https://stackoverflow.com/questions/236129/the-most-elegant-way-to-iterate-the-words-of-a-string
+    auto v = split(s, '\t');
+    std::sort(v.begin(), v.end());
+    std::stringstream ss;
+    for(size_t i = 0; i < v.size(); ++i)
+    {
+      if(i != 0)
+        ss << "\t";
+      ss << v[i];
+    }
+    return ss.str();
+}
+
 bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
 {
     if((rec1 == NULL) && (rec2 == NULL))
@@ -791,6 +826,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
             {
                 std::cerr << "Failed to read tags\n";
             }
+            myTags1 = sort_tabbed(std::string(myTags1.c_str())).c_str();
         }
         if(rec2 != NULL)
         {
@@ -799,6 +835,7 @@ bool Diff::getDiffs(SamRecord* rec1, SamRecord* rec2)
             {
                     std::cerr << "Failed to read tags\n";
             }
+            myTags2 = sort_tabbed(std::string(myTags2.c_str())).c_str();
         }
     }
     else if(!myTags.IsEmpty())
